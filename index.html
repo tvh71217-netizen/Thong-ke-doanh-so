@@ -45,7 +45,7 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 <div style="display:flex;gap:6px;margin-top:8px"><input id="newkv" placeholder="Thêm khu vực mới (VD: Bình Thạnh)"><button class="btn s" style="width:auto;margin:0;padding:0 14px" onclick="addKv()">Thêm</button></div>
 <div style="display:flex;justify-content:space-between;align-items:baseline"><label>Tên đơn vị</label><button onclick="uOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý / xoá đơn vị</button></div><input id="dv" list="dvl" oninput="pick()" onchange="pick()" placeholder="VD: Gara Thông Cao"><datalist id="dvl"></datalist>
 <div class="g2"><div><label>Ngày giao</label><input id="ngay" type="date"></div>
-<div><label>Mã hàng</label><input id="ma" placeholder="DK 55B24L"></div></div>
+<div><label>Mã hàng</label><input id="ma" placeholder="DK 55B24L" autocapitalize="characters" style="text-transform:uppercase" oninput="const a=this.selectionStart,b=this.selectionEnd;this.value=this.value.toUpperCase();this.setSelectionRange(a,b)"></div></div>
 <div class="g2"><div><label>Giá</label><input id="gia" type="text" inputmode="numeric" placeholder="1600 = 1.600.000" oninput="calc()"><small id="gh" class="ok"></small></div>
 <div><label>Số lượng</label><input id="sl" type="number" inputmode="numeric" value="1" oninput="calc()"></div></div>
 <div class="g2"><div><label>Thanh toán</label><select id="tt"><option value="0">Chưa thanh toán</option><option value="1">Đã thanh toán</option></select></div>
@@ -76,7 +76,7 @@ const $=id=>document.getElementById(id),F=n=>(+n||0).toLocaleString('vi-VN');
 const COL={'Gò Vấp':'#bdd7ee','Quận 9':'#ffe699','Quận 7':'#c6e0b4','Quận 8':'#f4b183','Tân Phú':'#b4c7e7'};
 let S={rows:[],regions:['Gò Vấp','Quận 9','Quận 7','Quận 8','Tân Phú']},edit=null,K='gara';
 try{const d=localStorage.getItem('tkds');if(d)S=JSON.parse(d)}catch(e){}
-S.units=S.units||[];S.groups=(S.groups||[]).map(g=>g.ids?g:{dv:g.dv,ids:S.rows.filter(r=>r.dv==g.dv&&r.ngay>=g.from&&r.ngay<=g.to).map(r=>r.id)}).filter(g=>g.ids.length>1);S.rows.forEach(r=>{if(!S.units.some(u=>u.dv==r.dv))S.units.push({dv:r.dv,kv:r.kv,kenh:r.kenh})});
+S.rows.forEach(r=>{if(r.ma)r.ma=r.ma.toUpperCase()});S.units=S.units||[];S.groups=(S.groups||[]).map(g=>g.ids?g:{dv:g.dv,ids:S.rows.filter(r=>r.dv==g.dv&&r.ngay>=g.from&&r.ngay<=g.to).map(r=>r.id)}).filter(g=>g.ids.length>1);S.rows.forEach(r=>{if(!S.units.some(u=>u.dv==r.dv))S.units.push({dv:r.dv,kv:r.kv,kenh:r.kenh})});
 function persist(){try{localStorage.setItem('tkds',JSON.stringify(S))}catch(e){}}
 const D=s=>{if(!s)return'';const[a,b,c]=s.split('-');return+c+'/'+ +b+'/'+a.slice(2)};
 const KN={gara:'Gara',daily:'Đại lý',lop:'Lốp xe'};
@@ -99,7 +99,7 @@ const P=v=>{const n=+String(v).replace(/\D/g,'');return n&&n<10000?n*1000:n};
 function calc(){const g=P($('gia').value);$('gh').textContent=g?'= '+F(g):'';const t=g*$('sl').value;$('tt_v').textContent=F(t);$('ck_v').textContent=F(Math.round(t*$('ck').value/100))}
 function reset(){edit=null;['dv','ma','gia','note'].forEach(i=>$(i).value='');$('sl').value=1;$('ck').value=0;$('tt').value=0;$('save').textContent='Thêm';$('cancel').classList.add('hide');calc()}
 function save(){
- const r={id:edit||Date.now(),kenh:$('kenh').value,kv:$('kv').value,dv:$('dv').value.trim(),ngay:$('ngay').value,ma:$('ma').value.trim(),gia:P($('gia').value),sl:+$('sl').value||1,tt:+$('tt').value,ck:+$('ck').value,note:$('note').value.trim()};
+ const r={id:edit||Date.now(),kenh:$('kenh').value,kv:$('kv').value,dv:$('dv').value.trim(),ngay:$('ngay').value,ma:$('ma').value.trim().toUpperCase(),gia:P($('gia').value),sl:+$('sl').value||1,tt:+$('tt').value,ck:+$('ck').value,note:$('note').value.trim()};
  if(!r.dv||!r.ma||!r.gia){$('gh').textContent='Nhập tên đơn vị, mã hàng và giá';$('gh').className='no';return}$('gh').className='ok';
  const u=S.units.find(x=>x.dv.toLowerCase()==r.dv.toLowerCase());if(u){u.kv=r.kv;u.kenh=r.kenh;r.dv=u.dv}else S.units.push({dv:r.dv,kv:r.kv,kenh:r.kenh});
  if(edit){S.rows=S.rows.map(x=>x.id==edit?r:x)}else S.rows.push(r);

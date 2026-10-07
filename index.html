@@ -34,8 +34,6 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 .t td{color:var(--red);font-weight:700}
 .sum{display:flex;justify-content:space-between;padding:6px 0}
 .hide{display:none}.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9}.mo.hide{display:none}.mb{background:var(--card);border-radius:14px;padding:16px;width:100%;max-width:400px}.ch{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.ch button{padding:8px 12px;border:1px solid var(--bd);border-radius:20px;background:var(--bg);color:var(--tx);font-size:14px}
-#pr{display:none}
-@media print{body>*:not(#pr){display:none!important}#pr{display:block;color:#000;background:#fff;font:12px/1.4 -apple-system,Segoe UI,Roboto,sans-serif}#pr h2{font-size:16px;margin:0 0 2px;text-align:center}#pr .dt{text-align:center;color:#555;margin-bottom:10px}#pr table{min-width:0;width:100%;font-size:11px;margin-bottom:6px;page-break-inside:auto}#pr tr{page-break-inside:avoid}#pr th{background:#8dc63f;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;border:1px solid #999}#pr td{border:1px solid #999;color:#000}#pr .hd{font-weight:700;padding:5px 8px;margin-top:10px;border:1px solid #999;-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:avoid}#pr .t td{color:#d12a2a;font-weight:700}#pr .gt{margin-top:12px;font-size:14px;font-weight:700;color:#d12a2a;text-align:right}body{padding:0}}
 </style></head><body>
 <h1 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Thống Kê Doanh Số<button onclick="xp()" style="border:1px solid var(--pri);background:var(--card);color:var(--pri);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600">Xuất Excel</button></h1>
 <div class="tabs"><button id="t1" class="on" onclick="tab(1)">Thống kê</button><button id="t2" onclick="tab(2)">Tổng kết</button><button id="t3" onclick="tab(3)">Công nợ</button></div>
@@ -69,6 +67,7 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 <div id="dm" class="mo hide" onclick="if(event.target===this)delNo()"><div class="mb"><b>Xoá dòng này?</b><div id="dmi" style="color:var(--mu);font-size:13px;margin:6px 0 12px"></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="delNo()">No</button><button class="btn" style="margin-top:0;background:var(--red)" onclick="delYes()">Yes, xoá</button></div></div></div>
 <div id="mo" class="mo hide"><div class="mb"><b>Xác nhận đã thanh toán</b><div id="mi" style="color:var(--mu);font-size:13px;margin-top:4px"></div><div class="ch"><button onclick="qp('Đã tt ck')">Đã tt ck</button><button onclick="qp('Đã tt tm')">Đã tt tm</button><button onclick="qp('Đã ck cty')">Đã ck cty</button><button onclick="qp('Đã tt cty')">Đã tt cty</button></div><input id="pn" placeholder="Ghi chú (VD: Đã ck anh Ánh)"><div class="g2"><button class="btn s" onclick="cp()">Huỷ</button><button class="btn" style="margin-top:6px" onclick="okp()">Xác nhận</button></div></div></div>
 <div id="gm" class="mo hide" onclick="if(event.target===this)gClose()"><div class="mb"><b>Gộp tổng tuỳ chọn</b><div id="gt" style="color:var(--mu);font-size:13px;margin:4px 0 8px"></div><div id="gl"></div><div id="gs" style="font-weight:600;padding:6px 0"></div><div class="g2"><button class="btn s" onclick="gClose()">Đóng</button><button class="btn" style="margin-top:6px" onclick="gAdd()">Thêm tổng</button></div></div></div>
+<div id="pm" class="mo hide" onclick="if(event.target===this)pClose()"><div class="mb"><b>Xuất công nợ PDF</b><div style="color:var(--mu);font-size:13px;margin:4px 0 8px">Tích chọn đơn vị muốn xuất</div><div id="pl" style="max-height:45vh;overflow:auto"></div><div id="ps" style="font-weight:600;padding:8px 0"></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="pAll(0)">Bỏ chọn hết</button><button class="btn s" style="margin-top:0" onclick="pAll(1)">Chọn hết</button></div><div class="g2"><button class="btn s" onclick="pClose()">Đóng</button><button class="btn" style="margin-top:6px" onclick="pGo()">Xuất PDF</button></div></div></div>
 <div id="um" class="mo hide" onclick="if(event.target===this)uClose()"><div class="mb"><b>Đơn vị đã lưu</b><div style="color:var(--mu);font-size:13px;margin:4px 0">Chạm Xoá 2 lần để xoá. Nếu đơn vị còn dữ liệu thì các dòng đó cũng bị xoá.</div><div id="ul" style="max-height:55vh;overflow:auto"></div><button class="btn s" onclick="uClose()">Đóng</button></div></div>
 <div id="p3" class="hide"><div id="cnv"></div></div>
 <div style="padding:8px 12px 24px"><button class="btn s" style="color:var(--red);border-color:var(--red)" onclick="aOpen()">Xoá tất cả dữ liệu</button></div>
@@ -92,12 +91,53 @@ function okp(){const r=S.rows.find(x=>x.id==pid);if(!r)return cp();const d=new D
 function cn(){const L=S.rows.filter(r=>!r.tt);const us=[...new Set(L.map(r=>r.kenh+'|'+r.kv+'|'+r.dv))];let all=0;
  let h=us.map(u=>{const[k,v,d]=u.split('|');const A=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:1);const t=A.reduce((a,r)=>a+tien(r),0);all+=t;
  return `<div class="card" style="padding:0;overflow:hidden"><div class="kv" style="background:${COL[v]||'#ddd'};color:#111">${d} <small style="font-weight:400">· ${KN[k]} · ${v}</small></div><div style="padding:0 10px 8px">`+A.map(r=>`<div class="row"><div>${D(r.ngay)} · ${r.ma}<br><small>${F(r.gia)} × ${r.sl}${r.note?' · '+r.note:''}</small></div><div style="text-align:right"><b>${F(tien(r))}</b><br><button class="no" style="color:var(--red);border-color:var(--red);font-weight:700" onclick="tg(${r.id})">Chưa tt</button></div></div>`).join('')+`<div class="tot"><span>Còn nợ</span><span class="no">${F(t)}</span></div></div></div>`}).join('');
- $('cnv').innerHTML=(h?'<div style="padding:0 12px 10px"><button class="btn" style="margin-top:0" onclick="xpPdf()">Xuất công nợ PDF</button></div>':'')+(h||'<div class="card"><small>Không có công nợ 🎉</small></div>')+(h?`<div class="card"><div class="tot"><span>Tổng công nợ (${us.length} đơn vị)</span><span class="no">${F(all)}</span></div></div>`:'')}
-function xpPdf(){const L=S.rows.filter(r=>!r.tt);if(!L.length)return;let e=$('pr');if(!e){e=document.createElement('div');e.id='pr';document.body.appendChild(e)}
- const n=new Date(),us=[...new Set(L.map(r=>r.kenh+'|'+r.kv+'|'+r.dv))];let all=0;
- e.innerHTML=`<h2>BẢNG THEO DÕI CÔNG NỢ</h2><div class="dt">Ngày xuất: ${n.getDate()}/${n.getMonth()+1}/${n.getFullYear()}</div>`+us.map(u=>{const[k,v,d]=u.split('|');const A=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:0);const t=A.reduce((a,r)=>a+tien(r),0);all+=t;
-  return `<div class="hd" style="background:${COL[v]||'#ddd'}">${d} · ${KN[k]} · ${v}</div><table><tr><th>Ngày giao</th><th>Tên Hàng Hoá</th><th>Giá</th><th>SL</th><th>Thành Tiền</th><th>Ghi chú</th></tr>`+A.map(r=>`<tr><td>${D(r.ngay)}</td><td>${r.ma}</td><td>${F(r.gia)}</td><td>${r.sl}</td><td>${F(tien(r))}</td><td>${r.note||''}</td></tr>`).join('')+`<tr class="t"><td></td><td>Còn nợ</td><td></td><td>${A.reduce((a,r)=>a+r.sl,0)}</td><td>${F(t)}</td><td></td></tr></table>`}).join('')+`<div class="gt">TỔNG CÔNG NỢ: ${F(all)}</div>`;
- const o=document.title;document.title='Cong_no_'+n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0');window.print();setTimeout(()=>document.title=o,1500)}
+ $('cnv').innerHTML=(h?'<div style="padding:0 12px 10px"><button class="btn" style="margin-top:0" onclick="pOpen()">Xuất công nợ PDF</button></div>':'')+(h||'<div class="card"><small>Không có công nợ 🎉</small></div>')+(h?`<div class="card"><div class="tot"><span>Tổng công nợ (${us.length} đơn vị)</span><span class="no">${F(all)}</span></div></div>`:'')}
+let pU=[];
+function pKeys(){const L=S.rows.filter(r=>!r.tt);return[...new Set(L.map(r=>r.kenh+'|'+r.kv+'|'+r.dv))]}
+function pOpen(){const L=S.rows.filter(r=>!r.tt);pU=pKeys();if(!pU.length)return;
+ $('pl').innerHTML=pU.map((u,i)=>{const[k,v,d]=u.split('|'),t=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).reduce((a,r)=>a+tien(r),0);return `<label style="display:flex;align-items:center;gap:8px;margin:0;padding:8px 0;border-top:1px solid var(--bd);font-size:14px;color:var(--tx)"><input type="checkbox" class="pc" value="${i}" checked onchange="pSel()" style="width:auto"><span style="flex:1">${d}<br><small style="color:var(--mu)">${KN[k]} · ${v}</small></span><b class="no">${F(t)}</b></label>`}).join('');pSel();$('pm').classList.remove('hide')}
+function pClose(){$('pm').classList.add('hide')}
+function pAll(v){document.querySelectorAll('#pl .pc').forEach(x=>x.checked=!!v);pSel()}
+function pSel(){const c=[...document.querySelectorAll('#pl .pc:checked')],L=S.rows.filter(r=>!r.tt);let t=0;c.forEach(x=>{const[k,v,d]=pU[x.value].split('|');t+=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).reduce((a,r)=>a+tien(r),0)});$('ps').textContent=c.length?`Đã chọn ${c.length}/${pU.length} đơn vị · ${F(t)}`:'Chưa chọn đơn vị nào'}
+function pGo(){const ks=[...document.querySelectorAll('#pl .pc:checked')].map(x=>pU[x.value]);if(!ks.length){$('ps').textContent='Chọn ít nhất 1 đơn vị';return}
+ const blob=pdfBuild(ks),nm=[...new Set(ks.map(u=>u.split('|')[2]))],fn=('Công Nợ '+(nm.length<=2?nm.join(' - '):nm[0]+' và '+(nm.length-1)+' đơn vị khác')).replace(/[\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim()+'.pdf';pClose();
+ const file=new File([blob],fn,{type:'application/pdf'});
+ if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:fn}).catch(()=>{})}
+ else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}}
+function pdfBuild(keys){
+ const W=595,H=842,M=36,Z=2.5,FT='-apple-system,"Helvetica Neue",Arial,sans-serif',cw=W-2*M,cols=[56,128,76,30,86];cols.push(cw-cols.reduce((a,b)=>a+b,0));
+ const X=[M];cols.forEach((w,i)=>X.push(X[i]+w));
+ const pg=[];let cv,c,y,hd=null;
+ const np=()=>{cv=document.createElement('canvas');cv.width=W*Z;cv.height=H*Z;c=cv.getContext('2d');c.scale(Z,Z);c.fillStyle='#fff';c.fillRect(0,0,W,H);c.textBaseline='middle';pg.push(cv);y=M};
+ const wrap=(t,w)=>{const o=[];String(t==null?'':t).split('\n').forEach(p=>{let l='';p.split(' ').forEach(wd=>{const t2=l?l+' '+wd:wd;if(!l||c.measureText(t2).width<=w)l=t2;else{o.push(l);l=wd}});o.push(l)});return o};
+ const row=(cells,o)=>{o=o||{};c.font=(o.b?'bold ':'')+'10.5px '+FT;
+  const ls=cells.map((t,i)=>wrap(t,cols[i]-8)),h=Math.max(...ls.map(l=>l.length))*13+8;
+  if(y+h>H-M){np();if(hd)unit(hd.t,hd.bg,1);c.font=(o.b?'bold ':'')+'10.5px '+FT}
+  cells.forEach((t,i)=>{if(o.f){c.fillStyle=o.f;c.fillRect(X[i],y,cols[i],h)}c.strokeStyle='#999';c.lineWidth=.6;c.strokeRect(X[i],y,cols[i],h);c.fillStyle=o.c||'#000';c.textAlign='center';
+   const l=ls[i],y0=y+(h-l.length*13)/2+6.5;l.forEach((q,j)=>c.fillText(q,X[i]+cols[i]/2,y0+j*13))});y+=h};
+ const colh=()=>row(['Ngày giao','Tên Hàng Hoá','Giá','SL','Thành Tiền','Ghi chú'],{b:1,f:'#8dc63f',c:'#fff'});
+ const unit=(t,bg,cont)=>{hd={t,bg};c.fillStyle=bg;c.fillRect(M,y,cw,22);c.strokeStyle='#999';c.lineWidth=.6;c.strokeRect(M,y,cw,22);c.fillStyle='#000';c.font='bold 12px '+FT;c.textAlign='left';c.fillText(t+(cont?' (tiếp)':''),M+8,y+11.5);y+=22;colh()};
+ np();c.fillStyle='#000';c.textAlign='center';c.font='bold 17px '+FT;c.fillText('BẢNG THEO DÕI CÔNG NỢ',W/2,y+10);y+=22;
+ const n=new Date();c.font='11px '+FT;c.fillStyle='#555';c.fillText('Ngày xuất: '+n.getDate()+'/'+(n.getMonth()+1)+'/'+n.getFullYear(),W/2,y+6);y+=24;
+ const L=S.rows.filter(r=>!r.tt);let all=0;
+ keys.forEach(u=>{const[k,v,d]=u.split('|'),A=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:0),t=A.reduce((a,r)=>a+tien(r),0);all+=t;
+  if(y+22+22+30>H-M){np()}else y+=8;
+  unit(d+' · '+KN[k]+' · '+v,COL[v]||'#ddd');
+  A.forEach(r=>row([D(r.ngay),r.ma,F(r.gia),String(r.sl),F(tien(r)),r.note||'']));
+  row(['','Còn nợ','',String(A.reduce((a,r)=>a+r.sl,0)),F(t),''],{b:1,c:'#d12a2a'});hd=null});
+ if(y+30>H-M)np();y+=12;c.font='bold 14px '+FT;c.fillStyle='#d12a2a';c.textAlign='right';c.fillText('TỔNG CÔNG NỢ: '+F(all),W-M,y+8);
+ const im=pg.map(q=>{const b=atob(q.toDataURL('image/jpeg',.92).split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return{w:q.width,h:q.height,data:u}});
+ const en=new TextEncoder(),parts=[],off=[];let len=0;
+ const put=x=>{const b=typeof x=='string'?en.encode(x):x;parts.push(b);len+=b.length};
+ const ob=(i,body,st)=>{off[i]=len;put(i+' 0 obj\n'+body);if(st!=null){put('\nstream\n');put(st);put('\nendstream')}put('\nendobj\n')};
+ put('%PDF-1.4\n');ob(1,'<< /Type /Catalog /Pages 2 0 R >>');
+ ob(2,'<< /Type /Pages /Kids ['+im.map((_,i)=>(3+i*3)+' 0 R').join(' ')+'] /Count '+im.length+' >>');
+ im.forEach((m,i)=>{const q=3+i*3,cs='q 595 0 0 842 0 0 cm /Im0 Do Q';
+  ob(q,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im0 ${q+2} 0 R >> >> /Contents ${q+1} 0 R >>`);
+  ob(q+1,`<< /Length ${cs.length} >>`,cs);
+  ob(q+2,`<< /Type /XObject /Subtype /Image /Width ${m.w} /Height ${m.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${m.data.length} >>`,m.data)});
+ const xr=len,N=3+im.length*3;put('xref\n0 '+N+'\n0000000000 65535 f \n');for(let i=1;i<N;i++)put(String(off[i]).padStart(10,'0')+' 00000 n \n');
+ put(`trailer\n<< /Size ${N} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);return new Blob(parts,{type:'application/pdf'})}
 function kn(b){K=b.dataset.k;document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x==b));sum()}
 function kvOpts(){$('kv').innerHTML=S.regions.map(r=>`<option>${r}</option>`).join('')}
 function addKv(){const n=$('newkv').value.trim();if(!n)return;if(!S.regions.includes(n))S.regions.push(n);persist();kvOpts();$('kv').value=n;$('newkv').value='';dvList()}

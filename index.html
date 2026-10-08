@@ -159,7 +159,7 @@ function bParse(){const out=[],bad=[],num=x=>/^\d+([.,]\d+)?$/.test(x);
   ma=(ma||'').toUpperCase();if(ma&&gia)out.push({ma,gia,sl,ck});else bad.push(i+1)});
  return{out,bad}}
 function bPrev(){const{out,bad}=bParse();$('bs').className=bad.length?'no':'';$('bs').textContent=(out.length?`${out.length} mã · ${F(out.reduce((a,r)=>a+r.gia*r.sl,0))}đ`:'')+(bad.length?` · Dòng lỗi: ${bad.join(', ')}`:'')}
-function bOpen(){const d=$('dv').value.trim();if(!d){$('gh').textContent='Nhập tên đơn vị trước';$('gh').className='no';$('dv').focus();return}$('bt0').textContent=d+' · '+D($('ngay').value)+' · dùng chung kênh, khu vực, ngày, thanh toán, ck, ghi chú ở form';$('bt').value='';$('bs').textContent='';$('bm').classList.remove('hide');setTimeout(()=>$('bt').focus(),50)}
+function bOpen(){const d=$('dv').value.trim();if(!d||!$('ngay').value){$('gh').textContent=!d?'Nhập tên đơn vị trước':'Chọn ngày giao trước';$('gh').className='no';(!d?$('dv'):$('ngay')).focus();return}$('bt0').textContent=d+' · '+D($('ngay').value)+' · dùng chung kênh, khu vực, ngày, thanh toán, ck, ghi chú ở form';$('bt').value='';$('bs').textContent='';$('bm').classList.remove('hide');setTimeout(()=>$('bt').focus(),50)}
 function bClose(){$('bm').classList.add('hide')}
 function bAdd(){const{out,bad}=bParse();if(!out.length||bad.length){bPrev();if(!out.length)$('bs').textContent='Chưa có mã hợp lệ';return}
  const dv=$('dv').value.trim(),kenh=$('kenh').value,kv=$('kv').value;let nm=dv;
@@ -169,10 +169,10 @@ function bAdd(){const{out,bad}=bParse();if(!out.length||bad.length){bPrev();if(!
 function ckSet(v){v=+v||0;const e=$('ck');if(![...e.options].some(o=>o.value!='x'&&+o.value==v)){const o=document.createElement('option');o.textContent=v;e.insertBefore(o,e.querySelector('option[value="x"]'))}e.value=[...e.options].find(o=>o.value!='x'&&+o.value==v).value;calc()}
 function ckPick(){const e=$('ck');if(e.value=='x'){const v=parseFloat(String(prompt('Nhập mức ck (%), VD: 1.5')||'').replace(',','.'));if(v>=0&&v<=100)ckSet(v);else e.value='0'}calc();bSync('c')}
 function bSync(w){if(!bb)return;S.rows.forEach(r=>{if(bb.includes(r.id)){if(w=='n')r.note=$('note').value.trim();if(w=='c')r.ck=+$('ck').value;if(w=='t'){r.tt=+$('tt').value;if(!r.tt)r.pay=''}}});persist();render();calc()}
-function reset(){edit=null;bb=null;$('bdone').classList.add('hide');$('bh').textContent='';['dv','ma','gia','note'].forEach(i=>$(i).value='');$('sl').value=1;$('ck').value=0;$('tt').value=0;$('save').textContent='Thêm';$('cancel').classList.add('hide');calc()}
+function reset(){edit=null;$('ngay').value='';bb=null;$('bdone').classList.add('hide');$('bh').textContent='';['dv','ma','gia','note'].forEach(i=>$(i).value='');$('sl').value=1;$('ck').value=0;$('tt').value=0;$('save').textContent='Thêm';$('cancel').classList.add('hide');calc()}
 function save(){
  const r={id:edit||Date.now(),kenh:$('kenh').value,kv:$('kv').value,dv:$('dv').value.trim(),ngay:$('ngay').value,ma:$('ma').value.trim().toUpperCase(),gia:P($('gia').value),sl:+$('sl').value||1,tt:+$('tt').value,ck:+$('ck').value,note:$('note').value.trim()};
- if(!r.dv||!r.ma||!r.gia){$('gh').textContent='Nhập tên đơn vị, mã hàng và giá';$('gh').className='no';return}$('gh').className='ok';
+ if(!r.dv||!r.ma||!r.gia||!r.ngay){$('gh').textContent=!r.ngay?'Chọn ngày giao':'Nhập tên đơn vị, mã hàng và giá';$('gh').className='no';return}$('gh').className='ok';
  const u=S.units.find(x=>x.dv.toLowerCase()==r.dv.toLowerCase());if(u){u.kv=r.kv;u.kenh=r.kenh;r.dv=u.dv}else S.units.push({dv:r.dv,kv:r.kv,kenh:r.kenh});
  if(edit){S.rows=S.rows.map(x=>x.id==edit?r:x)}else S.rows.push(r);
  persist();reset();render();dvList()}
@@ -315,5 +315,5 @@ function xp(){
  if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:fn}).catch(()=>{})}
  else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}}
 
-kvOpts();$('ngay').valueAsDate=new Date();dvList();calc();render();
+kvOpts();dvList();calc();render();
 </script></body></html>

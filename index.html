@@ -45,7 +45,7 @@ input[type=date]{-webkit-appearance:none;appearance:none;min-height:44px;text-al
 <div><label>Khu vực</label><select id="kv" onchange="dvList()"></select></div></div>
 <div style="display:flex;gap:6px;margin-top:8px"><input id="newkv" placeholder="Thêm khu vực mới (VD: Bình Thạnh)"><button class="btn s" style="width:auto;margin:0;padding:0 14px" onclick="addKv()">Thêm</button></div>
 <div style="display:flex;justify-content:space-between;align-items:baseline"><label>Tên đơn vị</label><button onclick="uOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý / xoá đơn vị</button></div><input id="dv" list="dvl" oninput="pick()" onchange="pick()" placeholder="VD: Gara Thông Cao"><datalist id="dvl"></datalist><datalist id="mal"></datalist>
-<div class="g2"><div><label>Ngày giao</label><input id="ngay" type="date"></div>
+<div class="g2"><div><label>Ngày giao</label><input id="ngay" type="hidden"><div style="display:flex;gap:4px"><select id="ngD" style="padding:10px 2px;text-align-last:center"></select><select id="ngM" style="padding:10px 2px;text-align-last:center"></select><select id="ngY" style="padding:10px 2px;text-align-last:center"></select></div></div>
 <div><label>Mã hàng</label><input id="ma" list="mal" placeholder="DK 55B24L" autocapitalize="characters" style="text-transform:uppercase" oninput="const a=this.selectionStart,b=this.selectionEnd;this.value=this.value.toUpperCase();this.setSelectionRange(a,b)"></div></div>
 <div class="g2"><div><label>Giá</label><input id="gia" type="text" inputmode="numeric" placeholder="1600 = 1.600.000" oninput="calc()"><small id="gh" class="ok"></small></div>
 <div><label>Số lượng</label><input id="sl" type="number" inputmode="numeric" value="1" oninput="calc()"></div></div>
@@ -177,8 +177,7 @@ function bAdd(){const{out,bad}=bParse();if(!out.length||bad.length){bPrev();if(!
 function ckSet(v){v=+v||0;const e=$('ck');if(![...e.options].some(o=>o.value!='x'&&+o.value==v)){const o=document.createElement('option');o.textContent=v;e.insertBefore(o,e.querySelector('option[value="x"]'))}e.value=[...e.options].find(o=>o.value!='x'&&+o.value==v).value;calc()}
 function ckPick(){const e=$('ck');if(e.value=='x'){const v=parseFloat(String(prompt('Nhập mức ck (%), VD: 1.5')||'').replace(',','.'));if(v>=0&&v<=100)ckSet(v);else e.value='0'}calc();bSync('c')}
 function bSync(w){if(!bb)return;S.rows.forEach(r=>{if(bb.includes(r.id)){if(w=='n')r.note=$('note').value.trim();if(w=='c')r.ck=+$('ck').value;if(w=='t'){r.tt=+$('tt').value;if(!r.tt)r.pay=''}}});persist();render();calc()}
-const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-function reset(){edit=null;$('ngay').value=todayStr();bb=null;$('bdone').classList.add('hide');$('bh').textContent='';['dv','ma','gia','note'].forEach(i=>$(i).value='');$('sl').value=1;$('ck').value=0;$('tt').value=0;$('save').textContent='Thêm';$('cancel').classList.add('hide');calc()}
+function reset(){edit=null;$('ngay').value='';bb=null;$('bdone').classList.add('hide');$('bh').textContent='';['dv','ma','gia','note'].forEach(i=>$(i).value='');$('sl').value=1;$('ck').value=0;$('tt').value=0;$('save').textContent='Thêm';$('cancel').classList.add('hide');calc()}
 function save(){
  const r={id:edit||Date.now(),kenh:$('kenh').value,kv:$('kv').value,dv:$('dv').value.trim(),ngay:$('ngay').value,ma:$('ma').value.trim().toUpperCase(),gia:P($('gia').value),sl:+$('sl').value||1,tt:+$('tt').value,ck:+$('ck').value,note:$('note').value.trim()};
  if(!r.dv||!r.ma||!r.gia||!r.ngay){$('gh').textContent=!r.ngay?'Chọn ngày giao':'Nhập tên đơn vị, mã hàng và giá';$('gh').className='no';return}$('gh').className='ok';
@@ -331,5 +330,18 @@ function xp(){
 
 kvOpts();dvList();calc();render();
 
-try{if(!$('ngay').value)$('ngay').value=todayStr()}catch(e){}
+
+(function(){
+ const el=$('ngay'),nd=$('ngD'),nm=$('ngM'),ny=$('ngY'),y0=new Date().getFullYear();
+ nd.innerHTML='<option value="">Ngày</option>'+Array.from({length:31},(_,i)=>`<option>${i+1}</option>`).join('');
+ nm.innerHTML='<option value="">Tháng</option>'+Array.from({length:12},(_,i)=>`<option>${i+1}</option>`).join('');
+ ny.innerHTML='<option value="">Năm</option>'+[y0-1,y0,y0+1].map(y=>`<option>${y}</option>`).join('');
+ const desc=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value'),p2=n=>String(n).padStart(2,'0');
+ function fromSel(){if(!nd.value||!nm.value||!ny.value){desc.set.call(el,'');return}
+  const last=new Date(+ny.value,+nm.value,0).getDate(),d=Math.min(+nd.value,last);nd.value=d;
+  desc.set.call(el,ny.value+'-'+p2(nm.value)+'-'+p2(d))}
+ [nd,nm,ny].forEach(x=>x.addEventListener('change',fromSel));
+ Object.defineProperty(el,'value',{get(){return desc.get.call(el)},set(v){desc.set.call(el,v||'');const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(v||'');
+  if(m){if(![...ny.options].some(o=>o.value==m[1]))ny.add(new Option(m[1],m[1]));nd.value=+m[3];nm.value=+m[2];ny.value=m[1]}else{nd.value=nm.value=ny.value=''}}});
+})();
 </script></body></html>

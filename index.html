@@ -201,7 +201,7 @@ function delYes(){if(dq!=null){S.rows=S.rows.filter(x=>x.id!=dq);persist();rende
 const tien=r=>r.gia*r.sl,ckt=r=>Math.round(tien(r)*r.ck/100);
 function render(){
  $('ckAll').textContent=F(S.rows.reduce((a,r)=>a+ckt(r),0));
- $('list').innerHTML=[...S.rows].reverse().slice(0,30).map(r=>`<div class="row"><div><b>${r.dv}</b> <small>· ${KN[r.kenh]} · ${r.kv}</small><br>${D(r.ngay)} · ${r.ma} · ${F(r.gia)} × ${r.sl} = <b>${F(tien(r))}</b><br><small class="${r.tt?'ok':'no'}" onclick="tg(${r.id})" style="text-decoration:underline;cursor:pointer">${r.tt?'✓ '+(r.pay||'Đã tt')+(r.payNote?' · '+eA(r.payNote):'')+' (chạm để huỷ)':'Chưa tt — chạm để xác nhận đã tt'}</small>${r.ck?`<small> · ck ${r.ck}% = ${F(ckt(r))}</small>`:''}${r.note?`<small> · ${r.note}</small>`:''}</div><div><button onclick="ed(${r.id})">Sửa</button><button onclick="del(${r.id})">Xoá</button></div></div>`).join('')||'<small>Chưa có dữ liệu</small>'}
+ $('list').innerHTML=[...S.rows].sort((a,b)=>a.ngay<b.ngay?1:a.ngay>b.ngay?-1:b.id-a.id).slice(0,30).map(r=>`<div class="row"><div><b>${r.dv}</b> <small>· ${KN[r.kenh]} · ${r.kv}</small><br>${D(r.ngay)} · ${r.ma} · ${F(r.gia)} × ${r.sl} = <b>${F(tien(r))}</b><br><small class="${r.tt?'ok':'no'}" onclick="tg(${r.id})" style="text-decoration:underline;cursor:pointer">${r.tt?'✓ '+(r.pay||'Đã tt')+(r.payNote?' · '+eA(r.payNote):'')+' (chạm để huỷ)':'Chưa tt — chạm để xác nhận đã tt'}</small>${r.ck?`<small> · ck ${r.ck}% = ${F(ckt(r))}</small>`:''}${r.note?`<small> · ${r.note}</small>`:''}</div><div><button onclick="ed(${r.id})">Sửa</button><button onclick="del(${r.id})">Xoá</button></div></div>`).join('')||'<small>Chưa có dữ liệu</small>'}
 function sum(){
  GN=[];
  const rows=S.rows.filter(r=>r.kenh==K);let h='',T=0,Q=0,C=0,U=0;

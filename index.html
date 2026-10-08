@@ -43,7 +43,7 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 <div class="g2"><div><label>Kênh</label><select id="kenh"><option value="gara">Gara</option><option value="daily">Đại lý</option><option value="lop">Lốp xe</option></select></div>
 <div><label>Khu vực</label><select id="kv" onchange="dvList()"></select></div></div>
 <div style="display:flex;gap:6px;margin-top:8px"><input id="newkv" placeholder="Thêm khu vực mới (VD: Bình Thạnh)"><button class="btn s" style="width:auto;margin:0;padding:0 14px" onclick="addKv()">Thêm</button></div>
-<div style="display:flex;justify-content:space-between;align-items:baseline"><label>Tên đơn vị</label><button onclick="uOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý / xoá đơn vị</button></div><input id="dv" list="dvl" oninput="pick()" onchange="pick()" placeholder="VD: Gara Thông Cao"><datalist id="dvl"></datalist><datalist id="mal"></datalist>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><label>Tên đơn vị</label><button onclick="uOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý / xoá đơn vị</button></div><input id="dv" list="dvl" oninput="dvIn(event)" placeholder="VD: Gara Thông Cao"><datalist id="dvl"></datalist><datalist id="mal"></datalist>
 <div class="g2"><div><label>Ngày giao</label><input id="ngay" type="date"></div>
 <div><label>Mã hàng</label><input id="ma" list="mal" placeholder="DK 55B24L" autocapitalize="characters" style="text-transform:uppercase" oninput="const a=this.selectionStart,b=this.selectionEnd;this.value=this.value.toUpperCase();this.setSelectionRange(a,b)"></div></div>
 <div class="g2"><div><label>Giá</label><input id="gia" type="text" inputmode="numeric" placeholder="1600 = 1.600.000" oninput="calc()"><small id="gh" class="ok"></small></div>
@@ -161,6 +161,7 @@ function pdfBuild(keys){
 function kn(b){K=b.dataset.k;document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x==b));sum()}
 function kvOpts(){$('kv').innerHTML=S.regions.map(r=>`<option>${r}</option>`).join('')}
 function addKv(){const n=$('newkv').value.trim();if(!n)return;if(!S.regions.includes(n))S.regions.push(n);persist();kvOpts();$('kv').value=n;$('newkv').value='';dvList()}
+function dvIn(e){pick();const v=$('dv').value.trim().toLowerCase();if(e&&(e.inputType==='insertReplacementText'||!e.inputType)&&S.units.some(x=>x.dv.toLowerCase()==v))$('dv').blur()}
 function pick(){const v=$('dv').value.trim().toLowerCase();const u=S.units.find(x=>x.dv.toLowerCase()==v);if(u){if(S.regions.includes(u.kv))$('kv').value=u.kv;$('kenh').value=u.kenh}}
 function dvList(){maList();const k=$('kv').value;$('dvl').innerHTML=S.units.map(u=>`<option value="${u.dv}" label="${u.kv}">`).join('')}
 const P=v=>{const n=+String(v).replace(/\D/g,'');return n&&n<10000?n*1000:n};

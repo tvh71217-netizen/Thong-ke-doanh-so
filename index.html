@@ -54,6 +54,7 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 <div class="tot"><span>Thành tiền</span><span id="tt_v">0</span></div>
 <div class="tot" style="padding-top:0"><span>Tiền ck</span><span id="ck_v">0</span></div>
 <button class="btn" id="save" onclick="save()">Thêm</button>
+<button class="btn s" id="bbtn" onclick="bOpen()">+ Thêm nhiều mã cho đơn vị này</button>
 <button class="btn s hide" id="cancel" onclick="reset()">Huỷ sửa</button>
 </div>
 <div class="card"><b>Tổng mức ck: <span id="ckAll" class="no">0</span></b><div id="list"></div></div>
@@ -66,6 +67,7 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 
 <div id="dm" class="mo hide" onclick="if(event.target===this)delNo()"><div class="mb"><b>Xoá dòng này?</b><div id="dmi" style="color:var(--mu);font-size:13px;margin:6px 0 12px"></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="delNo()">No</button><button class="btn" style="margin-top:0;background:var(--red)" onclick="delYes()">Yes, xoá</button></div></div></div>
 <div id="mo" class="mo hide"><div class="mb"><b>Xác nhận đã thanh toán</b><div id="mi" style="color:var(--mu);font-size:13px;margin-top:4px"></div><div class="ch"><button onclick="qp('Đã tt ck')">Đã tt ck</button><button onclick="qp('Đã tt tm')">Đã tt tm</button><button onclick="qp('Đã ck cty')">Đã ck cty</button><button onclick="qp('Đã tt cty')">Đã tt cty</button></div><input id="pn" placeholder="Ghi chú (VD: Đã ck anh Ánh)"><div class="g2"><button class="btn s" onclick="cp()">Huỷ</button><button class="btn" style="margin-top:6px" onclick="okp()">Xác nhận</button></div></div></div>
+<div id="bm" class="mo hide" onclick="if(event.target===this)bClose()"><div class="mb"><b>Thêm nhiều mã</b><div id="bt0" style="color:var(--mu);font-size:13px;margin:4px 0 8px"></div><textarea id="bt" rows="7" oninput="bPrev()" placeholder="Mỗi dòng 1 mã: Mã, Giá, SL&#10;DK 55B24L, 1600, 2&#10;N50Z, 1800&#10;(SL bỏ trống = 1)" style="width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:16px;text-transform:uppercase"></textarea><div id="bs" style="font-weight:600;padding:6px 0"></div><div class="g2"><button class="btn s" onclick="bClose()">Đóng</button><button class="btn" style="margin-top:6px" onclick="bAdd()">Thêm tất cả</button></div></div></div>
 <div id="gm" class="mo hide" onclick="if(event.target===this)gClose()"><div class="mb"><b>Gộp tổng tuỳ chọn</b><div id="gt" style="color:var(--mu);font-size:13px;margin:4px 0 8px"></div><div id="gl"></div><div id="gs" style="font-weight:600;padding:6px 0"></div><div class="g2"><button class="btn s" onclick="gClose()">Đóng</button><button class="btn" style="margin-top:6px" onclick="gAdd()">Thêm tổng</button></div></div></div>
 <div id="pm" class="mo hide" onclick="if(event.target===this)pClose()"><div class="mb"><b>Xuất công nợ PDF</b><div style="color:var(--mu);font-size:13px;margin:4px 0 8px">Tích chọn đơn vị muốn xuất</div><div id="pl" style="max-height:45vh;overflow:auto"></div><div id="ps" style="font-weight:600;padding:8px 0"></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="pAll(0)">Bỏ chọn hết</button><button class="btn s" style="margin-top:0" onclick="pAll(1)">Chọn hết</button></div><div class="g2"><button class="btn s" onclick="pClose()">Đóng</button><button class="btn" style="margin-top:6px" onclick="pGo()">Xuất PDF</button></div></div></div>
 <div id="um" class="mo hide" onclick="if(event.target===this)uClose()"><div class="mb"><b>Đơn vị đã lưu</b><div style="color:var(--mu);font-size:13px;margin:4px 0">Chạm Xoá 2 lần để xoá. Nếu đơn vị còn dữ liệu thì các dòng đó cũng bị xoá.</div><div id="ul" style="max-height:55vh;overflow:auto"></div><button class="btn s" onclick="uClose()">Đóng</button></div></div>
@@ -145,6 +147,20 @@ function pick(){const v=$('dv').value.trim().toLowerCase();const u=S.units.find(
 function dvList(){maList();const k=$('kv').value;$('dvl').innerHTML=S.units.map(u=>`<option value="${u.dv}" label="${u.kv}">`).join('')}
 const P=v=>{const n=+String(v).replace(/\D/g,'');return n&&n<10000?n*1000:n};
 function calc(){const g=P($('gia').value);$('gh').textContent=g?'= '+F(g):'';const t=g*$('sl').value;$('tt_v').textContent=F(t);$('ck_v').textContent=F(Math.round(t*$('ck').value/100))}
+function bParse(){const out=[],bad=[],num=x=>/^\d+([.,]\d+)?$/.test(x);
+ $('bt').value.split('\n').forEach((ln,i)=>{ln=ln.trim();if(!ln)return;let ma,gia=0,sl=1;const p=ln.split(/\t|,|;/).map(x=>x.trim()).filter(Boolean);
+  if(p.length>=2){ma=p[0];gia=P(p[1]);if(p[2])sl=+p[2].replace(/\D/g,'')||1}
+  else{const w=ln.split(/\s+/),t=[];while(w.length>1&&num(w[w.length-1])&&t.length<2)t.unshift(w.pop());if(t.length==2){gia=P(t[0]);sl=+t[1]||1}else if(t.length==1)gia=P(t[0]);ma=w.join(' ')}
+  ma=(ma||'').toUpperCase();if(ma&&gia)out.push({ma,gia,sl});else bad.push(i+1)});
+ return{out,bad}}
+function bPrev(){const{out,bad}=bParse();$('bs').className=bad.length?'no':'';$('bs').textContent=(out.length?`${out.length} mã · ${F(out.reduce((a,r)=>a+r.gia*r.sl,0))}đ`:'')+(bad.length?` · Dòng lỗi: ${bad.join(', ')}`:'')}
+function bOpen(){const d=$('dv').value.trim();if(!d){$('gh').textContent='Nhập tên đơn vị trước';$('gh').className='no';$('dv').focus();return}$('bt0').textContent=d+' · '+D($('ngay').value)+' · dùng chung kênh, khu vực, ngày, thanh toán, ck, ghi chú ở form';$('bt').value='';$('bs').textContent='';$('bm').classList.remove('hide');setTimeout(()=>$('bt').focus(),50)}
+function bClose(){$('bm').classList.add('hide')}
+function bAdd(){const{out,bad}=bParse();if(!out.length||bad.length){bPrev();if(!out.length)$('bs').textContent='Chưa có mã hợp lệ';return}
+ const dv=$('dv').value.trim(),kenh=$('kenh').value,kv=$('kv').value;let nm=dv;
+ const u=S.units.find(x=>x.dv.toLowerCase()==dv.toLowerCase());if(u){u.kv=kv;u.kenh=kenh;nm=u.dv}else S.units.push({dv,kv,kenh});
+ const t=Date.now();out.forEach((o,i)=>S.rows.push({id:t+i,kenh,kv,dv:nm,ngay:$('ngay').value,ma:o.ma,gia:o.gia,sl:o.sl,tt:+$('tt').value,ck:+$('ck').value,note:$('note').value.trim()}));
+ persist();reset();render();dvList();bClose()}
 function reset(){edit=null;['dv','ma','gia','note'].forEach(i=>$(i).value='');$('sl').value=1;$('ck').value=0;$('tt').value=0;$('save').textContent='Thêm';$('cancel').classList.add('hide');calc()}
 function save(){
  const r={id:edit||Date.now(),kenh:$('kenh').value,kv:$('kv').value,dv:$('dv').value.trim(),ngay:$('ngay').value,ma:$('ma').value.trim().toUpperCase(),gia:P($('gia').value),sl:+$('sl').value||1,tt:+$('tt').value,ck:+$('ck').value,note:$('note').value.trim()};

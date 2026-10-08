@@ -48,13 +48,14 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 <div><label>Mã hàng</label><input id="ma" list="mal" placeholder="DK 55B24L" autocapitalize="characters" style="text-transform:uppercase" oninput="const a=this.selectionStart,b=this.selectionEnd;this.value=this.value.toUpperCase();this.setSelectionRange(a,b)"></div></div>
 <div class="g2"><div><label>Giá</label><input id="gia" type="text" inputmode="numeric" placeholder="1600 = 1.600.000" oninput="calc()"><small id="gh" class="ok"></small></div>
 <div><label>Số lượng</label><input id="sl" type="number" inputmode="numeric" value="1" oninput="calc()"></div></div>
-<div class="g2"><div><label>Thanh toán</label><select id="tt"><option value="0">Chưa thanh toán</option><option value="1">Đã thanh toán</option></select></div>
-<div><label>Mức ck</label><select id="ck" onchange="calc()"><option value="0">Không ck</option><option>1</option><option>2</option><option>3</option><option>5</option></select></div></div>
-<label>Ghi chú</label><input id="note" placeholder="ship 45K, đã ck ngày...">
+<div class="g2"><div><label>Thanh toán</label><select id="tt" onchange="bSync()"><option value="0">Chưa thanh toán</option><option value="1">Đã thanh toán</option></select></div>
+<div><label>Mức ck</label><select id="ck" onchange="ckPick()"><option value="0">Không ck</option><option>0.5</option><option>1</option><option>2</option><option>3</option><option>5</option><option value="x">Khác (nhập tay)…</option></select></div></div>
+<label>Ghi chú</label><input id="note" placeholder="ship 45K, đã ck ngày..." oninput="bSync()"><small id="bh" class="ok"></small>
 <div class="tot"><span>Thành tiền</span><span id="tt_v">0</span></div>
 <div class="tot" style="padding-top:0"><span>Tiền ck</span><span id="ck_v">0</span></div>
 <button class="btn" id="save" onclick="save()">Thêm</button>
 <button class="btn s" id="bbtn" onclick="bOpen()">+ Thêm nhiều mã cho đơn vị này</button>
+<button class="btn s hide" id="bdone" onclick="reset()">Xong — xoá form để nhập mới</button>
 <button class="btn s hide" id="cancel" onclick="reset()">Huỷ sửa</button>
 </div>
 <div class="card"><b>Tổng mức ck: <span id="ckAll" class="no">0</span></b><div id="list"></div></div>
@@ -85,7 +86,7 @@ function persist(){try{localStorage.setItem('tkds',JSON.stringify(S))}catch(e){}
 const D=s=>{if(!s)return'';const[a,b,c]=s.split('-');return+c+'/'+ +b+'/'+a.slice(2)};
 const KN={gara:'Gara',daily:'Đại lý',lop:'Lốp xe'};
 function tab(n){[1,2,3].forEach(i=>{$('p'+i).classList.toggle('hide',n!=i);$('t'+i).classList.toggle('on',n==i)});if(n==2)sum();if(n==3)cn()}
-let pid=null,pids=null;
+let bb=null,pid=null,pids=null;
 function tg(id){const r=S.rows.find(x=>x.id==id);if(r.tt){r.tt=0;r.pay='';persist();render();cn();return}pid=id;$('mi').textContent=r.dv+' · '+r.ma+' · '+F(tien(r))+'đ';$('pn').value='';$('mo').classList.remove('hide')}
 function qp(t){$('pn').value=t}
 function ccAll(b,v){b.closest('.card').querySelectorAll('.cc').forEach(x=>x.checked=!!v)}
@@ -148,7 +149,9 @@ function addKv(){const n=$('newkv').value.trim();if(!n)return;if(!S.regions.incl
 function pick(){const v=$('dv').value.trim().toLowerCase();const u=S.units.find(x=>x.dv.toLowerCase()==v);if(u){if(S.regions.includes(u.kv))$('kv').value=u.kv;$('kenh').value=u.kenh}}
 function dvList(){maList();const k=$('kv').value;$('dvl').innerHTML=S.units.map(u=>`<option value="${u.dv}" label="${u.kv}">`).join('')}
 const P=v=>{const n=+String(v).replace(/\D/g,'');return n&&n<10000?n*1000:n};
-function calc(){const g=P($('gia').value);$('gh').textContent=g?'= '+F(g):'';const t=g*$('sl').value;$('tt_v').textContent=F(t);$('ck_v').textContent=F(Math.round(t*$('ck').value/100))}
+function calc(){const g=P($('gia').value);$('gh').textContent=g?'= '+F(g):'';
+ if(bb&&!g){const L=S.rows.filter(r=>bb.includes(r.id));$('tt_v').textContent=F(L.reduce((a,r)=>a+tien(r),0));$('ck_v').textContent=F(L.reduce((a,r)=>a+ckt(r),0));return}
+ const t=g*$('sl').value;$('tt_v').textContent=F(t);$('ck_v').textContent=F(Math.round(t*$('ck').value/100))}
 function bParse(){const out=[],bad=[],num=x=>/^\d+([.,]\d+)?$/.test(x);
  $('bt').value.split('\n').forEach((ln,i)=>{ln=ln.trim();if(!ln)return;let ma,gia=0,sl=1;const p=ln.split(/\t|,|;/).map(x=>x.trim()).filter(Boolean);
   if(p.length>=2){ma=p[0];gia=P(p[1]);if(p[2])sl=+p[2].replace(/\D/g,'')||1}
@@ -162,8 +165,11 @@ function bAdd(){const{out,bad}=bParse();if(!out.length||bad.length){bPrev();if(!
  const dv=$('dv').value.trim(),kenh=$('kenh').value,kv=$('kv').value;let nm=dv;
  const u=S.units.find(x=>x.dv.toLowerCase()==dv.toLowerCase());if(u){u.kv=kv;u.kenh=kenh;nm=u.dv}else S.units.push({dv,kv,kenh});
  const t=Date.now();out.forEach((o,i)=>S.rows.push({id:t+i,kenh,kv,dv:nm,ngay:$('ngay').value,ma:o.ma,gia:o.gia,sl:o.sl,tt:+$('tt').value,ck:+$('ck').value,note:$('note').value.trim()}));
- persist();reset();render();dvList();bClose()}
-function reset(){edit=null;['dv','ma','gia','note'].forEach(i=>$(i).value='');$('sl').value=1;$('ck').value=0;$('tt').value=0;$('save').textContent='Thêm';$('cancel').classList.add('hide');calc()}
+ persist();bb=out.map((o,i)=>t+i);$('ma').value='';$('gia').value='';$('sl').value=1;$('bdone').classList.remove('hide');$('bh').textContent='Đã thêm '+out.length+' mã. Ghi chú, mức ck, thanh toán sửa ở đây sẽ áp dụng cho cả '+out.length+' mã.';render();dvList();bClose();calc()}
+function ckSet(v){v=+v||0;const e=$('ck');if(![...e.options].some(o=>o.value!='x'&&+o.value==v)){const o=document.createElement('option');o.textContent=v;e.insertBefore(o,e.querySelector('option[value="x"]'))}e.value=[...e.options].find(o=>o.value!='x'&&+o.value==v).value;calc()}
+function ckPick(){const e=$('ck');if(e.value=='x'){const v=parseFloat(String(prompt('Nhập mức ck (%), VD: 1.5')||'').replace(',','.'));if(v>=0&&v<=100)ckSet(v);else e.value='0'}calc();bSync()}
+function bSync(){if(!bb)return;S.rows.forEach(r=>{if(bb.includes(r.id)){r.note=$('note').value.trim();r.ck=+$('ck').value;r.tt=+$('tt').value;if(!r.tt)r.pay=''}});persist();render();calc()}
+function reset(){edit=null;bb=null;$('bdone').classList.add('hide');$('bh').textContent='';['dv','ma','gia','note'].forEach(i=>$(i).value='');$('sl').value=1;$('ck').value=0;$('tt').value=0;$('save').textContent='Thêm';$('cancel').classList.add('hide');calc()}
 function save(){
  const r={id:edit||Date.now(),kenh:$('kenh').value,kv:$('kv').value,dv:$('dv').value.trim(),ngay:$('ngay').value,ma:$('ma').value.trim().toUpperCase(),gia:P($('gia').value),sl:+$('sl').value||1,tt:+$('tt').value,ck:+$('ck').value,note:$('note').value.trim()};
  if(!r.dv||!r.ma||!r.gia){$('gh').textContent='Nhập tên đơn vị, mã hàng và giá';$('gh').className='no';return}$('gh').className='ok';
@@ -171,7 +177,7 @@ function save(){
  if(edit){S.rows=S.rows.map(x=>x.id==edit?r:x)}else S.rows.push(r);
  persist();reset();render();dvList()}
 function ed(id){const r=S.rows.find(x=>x.id==id);edit=id;
- $('kenh').value=r.kenh;$('kv').value=r.kv;$('dv').value=r.dv;$('ngay').value=r.ngay;$('ma').value=r.ma;$('gia').value=r.gia;$('sl').value=r.sl;$('tt').value=r.tt;$('ck').value=r.ck;$('note').value=r.note;
+ $('kenh').value=r.kenh;$('kv').value=r.kv;$('dv').value=r.dv;$('ngay').value=r.ngay;$('ma').value=r.ma;$('gia').value=r.gia;$('sl').value=r.sl;$('tt').value=r.tt;ckSet(r.ck);$('note').value=r.note;
  $('save').textContent='Lưu';$('cancel').classList.remove('hide');calc();scrollTo(0,0)}
 let dq=null;function del(id){const r=S.rows.find(x=>x.id==id);if(!r)return;dq=id;$('dmi').textContent=`${r.dv} · ${D(r.ngay)} · ${r.ma} · ${F(r.gia)} × ${r.sl} = ${F(tien(r))}`;$('dm').classList.remove('hide')}
 function delNo(){dq=null;$('dm').classList.add('hide')}

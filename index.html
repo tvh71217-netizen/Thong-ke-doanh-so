@@ -34,6 +34,7 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 .t td{color:var(--red);font-weight:700}
 .sum{display:flex;justify-content:space-between;padding:6px 0}
 .hide{display:none}.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9}.mo.hide{display:none}.mb{background:var(--card);border-radius:14px;padding:16px;width:100%;max-width:400px}.ch{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.ch button{padding:8px 12px;border:1px solid var(--bd);border-radius:20px;background:var(--bg);color:var(--tx);font-size:14px}
+input[type=date]{-webkit-appearance:none;appearance:none;min-height:44px;text-align:left;display:block}
 </style></head><body>
 <h1 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Thống Kê Doanh Số<button onclick="xp()" style="border:1px solid var(--pri);background:var(--card);color:var(--pri);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600">Xuất Excel</button></h1>
 <div class="tabs"><button id="t1" class="on" onclick="tab(1)">Thống kê</button><button id="t2" onclick="tab(2)">Tổng kết</button><button id="t3" onclick="tab(3)">Công nợ</button></div>
@@ -93,12 +94,15 @@ function ccAll(b,v){b.closest('.card').querySelectorAll('.cc').forEach(x=>x.chec
 function ccGo(b){const c=[...b.closest('.card').querySelectorAll('.cc:checked')].map(x=>+x.value);if(!c.length){b.textContent='Tích chọn mã trước';setTimeout(()=>b.textContent='Xác nhận đã tt',1500);return}pids=c;pid=null;const L=c.map(i=>S.rows.find(x=>x.id==i)).filter(Boolean);$('mi').textContent=L[0].dv+' · '+L.length+' mã · '+F(L.reduce((a,r)=>a+tien(r),0))+'đ';$('pn').value='';$('mo').classList.remove('hide')}
 function cp(){pid=null;pids=null;$('mo').classList.add('hide')}
 function okp(){const d=new Date(),ds=d.getDate()+'/'+(d.getMonth()+1)+'/'+String(d.getFullYear()).slice(2),t=$('pn').value.trim(),ids=pids||[pid],L=ids.map(i=>S.rows.find(x=>x.id==i)).filter(Boolean);if(!L.length)return cp();L.forEach(r=>{r.tt=1;r.pay=(t||'Đã tt')+' '+ds});persist();cp();render();cn()}
+const eA=t=>String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function gnote(g){const G=S.groups[g.gi];if(G&&G.note!=null)return G.note;const N=[...new Set(g.map(r=>(r.note||'').trim()).filter(Boolean))];return N.length==1&&g.every(r=>(r.note||'').trim()==N[0])?N[0]:g.filter(r=>r.note).map(r=>r.ma+': '+r.note).join('; ')}
+function gNote(i,v){if(S.groups[i]){S.groups[i].note=v.trim();persist()}}
 function cnRow(r,nt){return `<div class="row"><input type="checkbox" class="cc" value="${r.id}" style="width:20px;flex:none;align-self:center"><div style="flex:1">${D(r.ngay)} · ${r.ma}<br><small>${F(r.gia)} × ${r.sl}${nt&&r.note?' · '+r.note:''}</small></div><div style="text-align:right"><b>${F(tien(r))}</b><br><button class="no" style="color:var(--red);border-color:var(--red);font-weight:700" onclick="tg(${r.id})">Chưa tt</button></div></div>`}
-function cnRows(d,A){return grp(d,A).map(g=>{if(g.length<2)return cnRow(g[0],1);const N=[...new Set(g.map(r=>(r.note||'').trim()).filter(Boolean))],nt=N.length==1&&g.every(r=>(r.note||'').trim()==N[0])?N[0]:g.filter(r=>r.note).map(r=>r.ma+': '+r.note).join('<br>');return `<div class="gb" style="margin:6px 0;border:1.5px solid var(--bd);border-radius:10px;padding:0 8px;background:rgba(0,0,0,.025)">`+g.map(r=>cnRow(r,0)).join('')+(nt?`<div style="border-top:1px solid var(--bd);padding:6px 0;font-size:13px;color:var(--mu)">📝 ${nt}</div>`:'')+`<div class="tot" style="border-top:1px solid var(--bd)"><span>Tổng ${g.length} mã</span><span class="no">${F(g.reduce((a,r)=>a+tien(r),0))}</span></div><div style="text-align:right;padding-bottom:6px"><button onclick="gSelAll(this)" style="border:0;background:none;color:var(--c2);font-size:13px;padding:2px 4px">Chọn cả nhóm</button></div></div>`}).join('')}
+function cnRows(d,A){return grp(d,A).map(g=>{if(g.length<2)return cnRow(g[0],1);const N=[...new Set(g.map(r=>(r.note||'').trim()).filter(Boolean))],nt=gnote(g);return `<div class="gb" style="margin:6px 0;border:1.5px solid var(--bd);border-radius:10px;padding:0 8px;background:rgba(0,0,0,.025)">`+g.map(r=>cnRow(r,0)).join('')+`<div style="border-top:1px solid var(--bd);padding:6px 0"><input placeholder="📝 Ghi chú cho nhóm…" value="${eA(nt)}" onchange="gNote(${g.gi},this.value)" style="font-size:14px;padding:8px"></div>`+`<div class="tot" style="border-top:1px solid var(--bd)"><span>Tổng ${g.length} mã</span><span class="no">${F(g.reduce((a,r)=>a+tien(r),0))}</span></div><div style="text-align:right;padding-bottom:6px"><button onclick="gSelAll(this)" style="border:0;background:none;color:var(--c2);font-size:13px;padding:2px 4px">Chọn cả nhóm</button></div></div>`}).join('')}
 function gSelAll(b){const c=b.closest('.gb').querySelectorAll('.cc'),v=![...c].every(x=>x.checked);c.forEach(x=>x.checked=v)}
 function cn(){const L=S.rows.filter(r=>!r.tt);const us=[...new Set(L.map(r=>r.kenh+'|'+r.kv+'|'+r.dv))];let all=0;
  let h=us.map(u=>{const[k,v,d]=u.split('|');const A=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:1);const t=A.reduce((a,r)=>a+tien(r),0);all+=t;
- return `<div class="card" style="padding:0;overflow:hidden"><div class="kv" style="background:${COL[v]||'#ddd'};color:#111">${d} <small style="font-weight:400">· ${KN[k]} · ${v}</small><button onclick="gOpen(${GN.push(d)-1})" style="float:right;border:0;background:none;color:#1a56b0;font-size:13px;font-weight:600;padding:0">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div style="padding:0 10px 8px">`+cnRows(d,A)+`<div class="tot"><span>Còn nợ</span><span class="no">${F(t)}</span></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="ccAll(this,1)">Chọn hết</button><button class="btn" style="margin-top:0" onclick="ccGo(this)">Xác nhận đã tt</button></div></div></div>`}).join('');
+ return `<div class="card" style="padding:0;overflow:hidden"><div class="kv" style="background:${COL[v]||'#ddd'};color:#111;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 10px"><span>${d} <small style="font-weight:400">· ${KN[k]} · ${v}</small></span><button onclick="gOpen(${GN.push(d)-1})" style="flex:none;margin-left:auto;border:0;background:none;color:#1a56b0;font-size:13px;font-weight:600;padding:0">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div style="padding:0 10px 8px">`+cnRows(d,A)+`<div class="tot"><span>Còn nợ</span><span class="no">${F(t)}</span></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="ccAll(this,1)">Chọn hết</button><button class="btn" style="margin-top:0" onclick="ccGo(this)">Xác nhận đã tt</button></div></div></div>`}).join('');
  $('cnv').innerHTML=(h?'<div style="padding:0 12px 10px"><button class="btn" style="margin-top:0" onclick="pOpen()">Xuất công nợ PDF</button></div>':'')+(h||'<div class="card"><small>Không có công nợ 🎉</small></div>')+(h?`<div class="card"><div class="tot"><span>Tổng công nợ (${us.length} đơn vị)</span><span class="no">${F(all)}</span></div></div>`:'')}
 let pU=[];
 function pKeys(){const L=S.rows.filter(r=>!r.tt);return[...new Set(L.map(r=>r.kenh+'|'+r.kv+'|'+r.dv))]}
@@ -173,7 +177,8 @@ function bAdd(){const{out,bad}=bParse();if(!out.length||bad.length){bPrev();if(!
 function ckSet(v){v=+v||0;const e=$('ck');if(![...e.options].some(o=>o.value!='x'&&+o.value==v)){const o=document.createElement('option');o.textContent=v;e.insertBefore(o,e.querySelector('option[value="x"]'))}e.value=[...e.options].find(o=>o.value!='x'&&+o.value==v).value;calc()}
 function ckPick(){const e=$('ck');if(e.value=='x'){const v=parseFloat(String(prompt('Nhập mức ck (%), VD: 1.5')||'').replace(',','.'));if(v>=0&&v<=100)ckSet(v);else e.value='0'}calc();bSync('c')}
 function bSync(w){if(!bb)return;S.rows.forEach(r=>{if(bb.includes(r.id)){if(w=='n')r.note=$('note').value.trim();if(w=='c')r.ck=+$('ck').value;if(w=='t'){r.tt=+$('tt').value;if(!r.tt)r.pay=''}}});persist();render();calc()}
-function reset(){edit=null;$('ngay').value='';bb=null;$('bdone').classList.add('hide');$('bh').textContent='';['dv','ma','gia','note'].forEach(i=>$(i).value='');$('sl').value=1;$('ck').value=0;$('tt').value=0;$('save').textContent='Thêm';$('cancel').classList.add('hide');calc()}
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function reset(){edit=null;$('ngay').value=todayStr();bb=null;$('bdone').classList.add('hide');$('bh').textContent='';['dv','ma','gia','note'].forEach(i=>$(i).value='');$('sl').value=1;$('ck').value=0;$('tt').value=0;$('save').textContent='Thêm';$('cancel').classList.add('hide');calc()}
 function save(){
  const r={id:edit||Date.now(),kenh:$('kenh').value,kv:$('kv').value,dv:$('dv').value.trim(),ngay:$('ngay').value,ma:$('ma').value.trim().toUpperCase(),gia:P($('gia').value),sl:+$('sl').value||1,tt:+$('tt').value,ck:+$('ck').value,note:$('note').value.trim()};
  if(!r.dv||!r.ma||!r.gia||!r.ngay){$('gh').textContent=!r.ngay?'Chọn ngày giao':'Nhập tên đơn vị, mã hàng và giá';$('gh').className='no';return}$('gh').className='ok';
@@ -205,8 +210,8 @@ function sum(){
    return G.map(g=>{const gm=g.m&&g.length>1,bg=gm?' style="background:rgba(0,0,0,.035)"':'';
    const rowH=g.map(r=>`<tr${bg}><td>${D(r.ngay)}</td><td>${r.ma}</td><td>${F(r.gia)}</td><td>${r.sl}</td><td>${F(tien(r))}</td><td>${!gm&&r.note?r.note+'<br>':''}<span class="${r.tt?'ok':'no'}">${r.tt?(r.pay||'Đã tt'):'Chưa tt'}</span></td><td>${r.ck?r.ck+'%<br>'+F(ckt(r)):''}</td></tr>`).join('');
    if(!gm)return rowH;
-   const N=[...new Set(g.map(r=>(r.note||'').trim()).filter(Boolean))],nt=N.length==1&&g.every(r=>(r.note||'').trim()==N[0])?N[0]:g.filter(r=>r.note).map(r=>r.ma+': '+r.note).join('<br>');
-   return rowH+`<tr class="t"><td colspan="3">Tổng</td><td>${g.reduce((a,r)=>a+r.sl,0)}</td><td>${F(g.reduce((a,r)=>a+tien(r),0))}</td><td>${nt}</td><td>${F(g.reduce((a,r)=>a+ckt(r),0))}</td></tr>`}).join('')})()+
+   const nt=gnote(g);
+   return rowH+`<tr class="t"><td colspan="3">Tổng</td><td>${g.reduce((a,r)=>a+r.sl,0)}</td><td>${F(g.reduce((a,r)=>a+tien(r),0))}</td><td>${eA(nt)}</td><td>${F(g.reduce((a,r)=>a+ckt(r),0))}</td></tr>`}).join('')})()+
    `</table></div>`});
   h+='</div></div>'});
  $('sumv').innerHTML=(h||'<div class="card"><small>Chưa có dữ liệu cho kênh này</small></div>')+
@@ -224,7 +229,7 @@ function grp(d,L){const gi={},fi={};S.groups.forEach((g,i)=>{if(g.dv==d)g.ids.fo
  L.forEach(x=>{const k=gi[x.id];if(k!==undefined&&(fi[k]===undefined||x.ngay<fi[k]))fi[k]=x.ngay});
  const key=x=>gi[x.id]!==undefined?'m'+gi[x.id]:x.ngay,ord=x=>gi[x.id]!==undefined?fi[gi[x.id]]:x.ngay;
  const o=[...L].sort((a,b)=>ord(a)<ord(b)?-1:ord(a)>ord(b)?1:key(a)<key(b)?-1:key(a)>key(b)?1:a.ngay<b.ngay?-1:a.ngay>b.ngay?1:0),G=[];
- o.forEach(x=>{const g=G[G.length-1];if(g&&key(g[0])==key(x))g.push(x);else G.push([x])});G.forEach(g=>g.m=key(g[0])[0]=='m');return G}
+ o.forEach(x=>{const g=G[G.length-1];if(g&&key(g[0])==key(x))g.push(x);else G.push([x])});G.forEach(g=>{g.m=key(g[0])[0]=='m';g.gi=gi[g[0].id]});return G}
 function gOpen(i){gd=GN[i];$('gt').textContent=gd+' · tích chọn các mã muốn gộp thành 1 hàng Tổng (không cần liền ngày)';gList();$('gm').classList.remove('hide')}
 function gClose(){$('gm').classList.add('hide');gd=null;if(!$('p2').classList.contains('hide'))sum();if(!$('p3').classList.contains('hide'))cn()}
 function gList(){const used=new Set(S.groups.filter(g=>g.dv==gd).flatMap(g=>g.ids)),
@@ -325,4 +330,6 @@ function xp(){
  else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}}
 
 kvOpts();dvList();calc();render();
+
+try{if(!$('ngay').value)$('ngay').value=todayStr()}catch(e){}
 </script></body></html>

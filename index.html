@@ -199,7 +199,7 @@ function sum(){
    const L=rows.filter(r=>r.kv==k&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:1);
    const t=L.reduce((a,r)=>a+tien(r),0),q=L.reduce((a,r)=>a+r.sl,0),c=L.reduce((a,r)=>a+ckt(r),0),u=L.filter(r=>!r.tt).reduce((a,r)=>a+tien(r),0);
    T+=t;Q+=q;C+=c;U+=u;
-   h+=`<div class="dv" style="background:${COL[k]||'#bdd7ee'}">${d}</div><div style="text-align:right"><button onclick="gOpen(${GN.push(d)-1})" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Σ Gộp tổng các mã${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div class="tw"><table><tr><th>Ngày giao</th><th>Tên Hàng Hoá</th><th>Giá</th><th>SL</th><th>Thành Tiền</th><th>Ghi chú</th><th>CK</th></tr>`+
+   h+=`<div class="dv" style="background:${COL[k]||'#bdd7ee'}">${d}</div><div style="text-align:right"><button onclick="gOpen(${GN.push(d)-1})" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div class="tw"><table><tr><th>Ngày giao</th><th>Tên Hàng Hoá</th><th>Giá</th><th>SL</th><th>Thành Tiền</th><th>Ghi chú</th><th>CK</th></tr>`+
    (()=>{const G=grp(d,L);
    return G.map(g=>{const gm=g.m&&g.length>1,bg=gm?' style="background:rgba(0,0,0,.035)"':'';
    const rowH=g.map(r=>`<tr${bg}><td>${D(r.ngay)}</td><td>${r.ma}</td><td>${F(r.gia)}</td><td>${r.sl}</td><td>${F(tien(r))}</td><td>${!gm&&r.note?r.note+'<br>':''}<span class="${r.tt?'ok':'no'}">${r.tt?(r.pay||'Đã tt'):'Chưa tt'}</span></td><td>${r.ck?r.ck+'%<br>'+F(ckt(r)):''}</td></tr>`).join('');
@@ -231,8 +231,9 @@ function gList(){const used=new Set(S.groups.filter(g=>g.dv==gd).flatMap(g=>g.id
  old=S.groups.map((g,i)=>g.dv==gd?`<div class="row"><span style="font-size:13px">${g.ids.map(id=>S.rows.find(r=>r.id==id)).filter(Boolean).map(r=>D(r.ngay)+' · '+r.ma).join('<br>')}</span><button class="no" onclick="gDel(${i})">Xoá</button></div>`:'').join('');
  $('gl').innerHTML=(A.length?'<div style="max-height:36vh;overflow:auto">'+A.map(r=>`<label style="display:flex;align-items:center;gap:8px;margin:0;padding:8px 0;border-top:1px solid var(--bd);font-size:14px;color:var(--tx)"><input type="checkbox" class="gc" value="${r.id}" onchange="gSel()" style="width:auto"><span>${D(r.ngay)} · ${r.ma} · SL ${r.sl}</span></label>`).join('')+'</div>':'<small>Không còn mã nào để chọn</small>')+(old?'<div style="margin-top:8px"><small>Đã gộp</small>'+old+'</div>':'');gSel()}
 function gSel(){const c=[...document.querySelectorAll('#gl .gc:checked')].map(x=>S.rows.find(r=>r.id==x.value)).filter(Boolean);$('gs').textContent=c.length?`Đã chọn ${c.length} mã · SL ${c.reduce((a,r)=>a+r.sl,0)}`:''}
-function gAdd(){const ids=[...document.querySelectorAll('#gl .gc:checked')].map(x=>+x.value);if(ids.length<2){$('gs').textContent='Chọn ít nhất 2 mã để gộp';return}S.groups.push({dv:gd,ids});persist();gList()}
-function gDel(i){S.groups.splice(i,1);persist();gList()}
+function gAdd(){const ids=[...document.querySelectorAll('#gl .gc:checked')].map(x=>+x.value);if(ids.length<2){$('gs').textContent='Chọn ít nhất 2 mã để gộp';return}S.groups.push({dv:gd,ids});persist();gList();gSync()}
+function gDel(i){S.groups.splice(i,1);persist();gList();gSync()}
+function gSync(){if(!$('p2').classList.contains('hide'))sum();if(!$('p3').classList.contains('hide'))cn()}
 function buildXlsx(){
  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),FN='Times New Roman';
  const fonts=['<font><sz val="11"/><name val="'+FN+'"/></font>'],fills=['<fill><patternFill patternType="none"/></fill>','<fill><patternFill patternType="gray125"/></fill>'],xfs=['<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'],sm={};

@@ -204,8 +204,8 @@ function sum(){
    return G.map(g=>{const gm=g.m&&g.length>1,bg=gm?' style="background:rgba(0,0,0,.035)"':'';
    const rowH=g.map(r=>`<tr${bg}><td>${D(r.ngay)}</td><td>${r.ma}</td><td>${F(r.gia)}</td><td>${r.sl}</td><td>${F(tien(r))}</td><td>${!gm&&r.note?r.note+'<br>':''}<span class="${r.tt?'ok':'no'}">${r.tt?(r.pay||'Đã tt'):'Chưa tt'}</span></td><td>${r.ck?r.ck+'%<br>'+F(ckt(r)):''}</td></tr>`).join('');
    if(!gm)return rowH;
-   const N=[...new Set(g.map(r=>(r.note||'').trim()).filter(Boolean))],nt=N.length==1&&g.every(r=>(r.note||'').trim()==N[0])?N[0]:g.filter(r=>r.note).map(r=>r.ma+': '+r.note).join('<br>'),un=g.filter(r=>!r.tt).reduce((a,r)=>a+tien(r),0);
-   return rowH+`<tr class="t"><td></td><td>Tổng ${g.length} mã</td><td></td><td>${g.reduce((a,r)=>a+r.sl,0)}</td><td>${F(g.reduce((a,r)=>a+tien(r),0))}</td><td>${nt?nt+'<br>':''}${un?'<span class="no">Còn nợ '+F(un)+'</span>':'<span class="ok">Đã tt hết</span>'}</td><td>${F(g.reduce((a,r)=>a+ckt(r),0))}</td></tr>`}).join('')})()+
+   const N=[...new Set(g.map(r=>(r.note||'').trim()).filter(Boolean))],nt=N.length==1&&g.every(r=>(r.note||'').trim()==N[0])?N[0]:g.filter(r=>r.note).map(r=>r.ma+': '+r.note).join('<br>');
+   return rowH+`<tr class="t"><td colspan="3">Tổng</td><td>${g.reduce((a,r)=>a+r.sl,0)}</td><td>${F(g.reduce((a,r)=>a+tien(r),0))}</td><td>${nt}</td><td>${F(g.reduce((a,r)=>a+ckt(r),0))}</td></tr>`}).join('')})()+
    `</table></div>`});
   h+='</div></div>'});
  $('sumv').innerHTML=(h||'<div class="card"><small>Chưa có dữ liệu cho kênh này</small></div>')+

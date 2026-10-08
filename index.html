@@ -168,7 +168,8 @@ function bAdd(){const{out,bad}=bParse();if(!out.length||bad.length){bPrev();if(!
  const dv=$('dv').value.trim(),kenh=$('kenh').value,kv=$('kv').value;let nm=dv;
  const u=S.units.find(x=>x.dv.toLowerCase()==dv.toLowerCase());if(u){u.kv=kv;u.kenh=kenh;nm=u.dv}else S.units.push({dv,kv,kenh});
  const t=Date.now();out.forEach((o,i)=>S.rows.push({id:t+i,kenh,kv,dv:nm,ngay:$('ngay').value,ma:o.ma,gia:o.gia,sl:o.sl,tt:+$('tt').value,ck:o.ck!=null?o.ck:+$('ck').value,note:$('note').value.trim()}));
- persist();bb=out.map((o,i)=>t+i);$('ma').value='';$('gia').value='';$('sl').value=1;$('bdone').classList.remove('hide');$('bh').textContent='Đã thêm '+out.length+' mã. Ghi chú, thanh toán sửa ở đây áp dụng cho cả '+out.length+' mã; đổi Mức ck sẽ ghi đè ck của cả lô.';render();dvList();bClose();calc()}
+ if(out.length>1)S.groups.push({dv:nm,ids:out.map((o,i)=>t+i)});
+ persist();bb=out.map((o,i)=>t+i);$('ma').value='';$('gia').value='';$('sl').value=1;$('bdone').classList.remove('hide');$('bh').textContent='Đã thêm '+out.length+' mã'+(out.length>1?' (tự gộp đơn)':'')+'. Ghi chú, thanh toán sửa ở đây áp dụng cho cả '+out.length+' mã; đổi Mức ck sẽ ghi đè ck của cả lô.';render();dvList();bClose();calc()}
 function ckSet(v){v=+v||0;const e=$('ck');if(![...e.options].some(o=>o.value!='x'&&+o.value==v)){const o=document.createElement('option');o.textContent=v;e.insertBefore(o,e.querySelector('option[value="x"]'))}e.value=[...e.options].find(o=>o.value!='x'&&+o.value==v).value;calc()}
 function ckPick(){const e=$('ck');if(e.value=='x'){const v=parseFloat(String(prompt('Nhập mức ck (%), VD: 1.5')||'').replace(',','.'));if(v>=0&&v<=100)ckSet(v);else e.value='0'}calc();bSync('c')}
 function bSync(w){if(!bb)return;S.rows.forEach(r=>{if(bb.includes(r.id)){if(w=='n')r.note=$('note').value.trim();if(w=='c')r.ck=+$('ck').value;if(w=='t'){r.tt=+$('tt').value;if(!r.tt)r.pay=''}}});persist();render();calc()}

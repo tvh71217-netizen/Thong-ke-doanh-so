@@ -88,6 +88,7 @@ const KN={gara:'Gara',daily:'Đại lý',lop:'Lốp xe'};
 function tab(n){[1,2,3].forEach(i=>{$('p'+i).classList.toggle('hide',n!=i);$('t'+i).classList.toggle('on',n==i)});if(n==2)sum();if(n==3)cn()}
 let bb=null,pid=null,pids=null;
 function tg(id){const r=S.rows.find(x=>x.id==id);if(r.tt){unpay([id]);persist();render();cn();return}pid=id;$('mi').textContent=r.dv+' · '+r.ma+' · '+F(tien(r))+'đ';pReset();$('mo').classList.remove('hide')}
+function sn(r,gm){if(!r.tt)return(!gm&&r.note?r.note+'<br>':'')+'<span class="no">Chưa tt</span>';const a=[];if(!gm&&r.note)a.push(r.note);if(r.pay&&r.pay.trim().toLowerCase()!='đã tt')a.push(r.pay);if(!gm&&r.payNote)a.push(eA(r.payNote));return a.length?a.join('<br>'):'Đã tt'}
 function unpay(ids){ids.forEach(i=>{const r=S.rows.find(x=>x.id==i);if(r){r.tt=0;r.pay='';r.payNote=''}S.groups.forEach(g=>{if(g.ids.includes(+i))delete g.payNote})})}
 let pm='';
 function pReset(){pm='';document.querySelectorAll('#mo .ch button').forEach(b=>b.classList.remove('on'));const d=new Date();$('pd').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');$('pn').value=''}
@@ -96,7 +97,7 @@ function ccAll(b,v){b.closest('.card').querySelectorAll('.cc').forEach(x=>x.chec
 function ccGo(b){const c=[...b.closest('.card').querySelectorAll('.cc:checked')].map(x=>+x.value);if(!c.length){b.textContent='Tích chọn mã trước';setTimeout(()=>b.textContent='Xác nhận đã tt',1500);return}pids=c;pid=null;const L=c.map(i=>S.rows.find(x=>x.id==i)).filter(Boolean);$('mi').textContent=L[0].dv+' · '+L.length+' mã · '+F(L.reduce((a,r)=>a+tien(r),0))+'đ'+(L.length>1?' · sẽ gộp thành 1 nhóm trong Tổng kết':'');pReset();$('mo').classList.remove('hide')}
 function cp(){pid=null;pids=null;$('mo').classList.add('hide')}
 function okp(){const dv=$('pd').value,ds=dv?D(dv):D(new Date().toISOString().slice(0,10)),t=$('pn').value.trim(),m=pm||'Đã tt',ids=pids||[pid],L=ids.map(i=>S.rows.find(x=>x.id==i)).filter(Boolean);if(!L.length)return cp();
-L.forEach(r=>{r.tt=1;r.pay=m+' '+ds;r.payNote=''});
+L.forEach(r=>{r.tt=1;r.pay=pm?m+' '+ds:'';r.payNote=''});
 if(L.length==1){L[0].payNote=t}else{const ii=L.map(r=>+r.id),set=new Set(ii),dn=L[0].dv;let G=S.groups.find(g=>g.dv==dn&&g.ids.length==ii.length&&g.ids.every(i=>set.has(i)));
  if(!G){S.groups.forEach(g=>{if(g.dv==dn)g.ids=g.ids.filter(i=>!set.has(i))});S.groups=S.groups.filter(g=>g.ids.length>=2);G={dv:dn,ids:ii};S.groups.push(G)}
  if(t)G.payNote=t;else delete G.payNote}
@@ -214,10 +215,10 @@ function sum(){
    h+=`<div class="dv" style="background:${COL[k]||'#bdd7ee'}">${d}</div><div style="text-align:right"><button onclick="gOpen(${GN.push(d)-1})" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div class="tw"><table><tr><th>Ngày giao</th><th>Tên Hàng Hoá</th><th>Giá</th><th>SL</th><th>Thành Tiền</th><th>Ghi chú</th><th>CK</th></tr>`+
    (()=>{const G=grp(d,L);
    return G.map(g=>{const gm=g.m&&g.length>1,bg=gm?' style="background:rgba(0,0,0,.035)"':'';
-   const rowH=g.map(r=>`<tr${bg}><td>${D(r.ngay)}</td><td>${r.ma}</td><td>${F(r.gia)}</td><td>${r.sl}</td><td>${F(tien(r))}</td><td>${!gm&&r.note?r.note+'<br>':''}<span class="${r.tt?'ok':'no'}">${r.tt?(r.pay||'Đã tt'):'Chưa tt'}</span>${!gm&&r.tt&&r.payNote?'<br>'+eA(r.payNote):''}</td><td>${r.ck?r.ck+'%<br>'+F(ckt(r)):''}</td></tr>`).join('');
+   const rowH=g.map(r=>`<tr${bg}><td>${D(r.ngay)}</td><td>${r.ma}</td><td>${F(r.gia)}</td><td>${r.sl}</td><td>${F(tien(r))}</td><td>${sn(r,gm)}</td><td>${r.ck?r.ck+'%<br>'+F(ckt(r)):''}</td></tr>`).join('');
    if(!gm)return rowH;
    const nt=(S.groups[g.gi]&&S.groups[g.gi].payNote)||gnote(g);
-   return rowH+`<tr class="t"><td colspan="3">Tổng</td><td>${g.reduce((a,r)=>a+r.sl,0)}</td><td>${F(g.reduce((a,r)=>a+tien(r),0))}</td><td>${eA(nt)}</td><td>${F(g.reduce((a,r)=>a+ckt(r),0))}</td></tr>`}).join('')})()+
+   return rowH+`<tr class="t"><td colspan="3">Tổng</td><td>${g.reduce((a,r)=>a+r.sl,0)}</td><td>${F(g.reduce((a,r)=>a+tien(r),0))}</td><td style="color:var(--tx)">${eA(nt)}</td><td>${F(g.reduce((a,r)=>a+ckt(r),0))}</td></tr>`}).join('')})()+
    `</table></div>`});
   h+='</div></div>'});
  $('sumv').innerHTML=(h||'<div class="card"><small>Chưa có dữ liệu cho kênh này</small></div>')+
@@ -286,8 +287,9 @@ function buildXlsx(){
     const G=grp(d,L);
     G.forEach(g=>{const f0=r;let q=0,t=0,c=0;
      g.forEach(x=>{const tt=tien(x),ck=ckt(x);q+=x.sl;t+=tt;c+=ck;if(!x.tt)sU+=tt;
-      const mgd=g.m&&g.length>1,parts=[];if(x.note&&!mgd)parts.push([x.note,'000000',0]);
-      parts.push(x.tt?[x.pay||'Đã tt','2E7D32',0]:['Chưa tt','FF0000',0]);if(x.tt&&x.payNote&&!mgd)parts.push([x.payNote,'2E7D32',0]);
+      const mgd=g.m&&g.length>1,parts=[];
+      if(!x.tt){if(x.note&&!mgd)parts.push([x.note,'000000',0]);parts.push(['Chưa tt','FF0000',0])}
+      else{if(x.note&&!mgd)parts.push([x.note,'000000',0]);if(x.pay&&x.pay.trim().toLowerCase()!='đã tt')parts.push([x.pay,'000000',0]);if(x.payNote&&!mgd)parts.push([x.payNote,'000000',0]);if(!parts.length)parts.push(['Đã tt','000000',0])}
       const ln=parts.reduce((a,p)=>a+Math.max(1,Math.ceil(p[0].length/24)),0);
       put(sh,r,2,ser(x.ngay),st({n:165}));put(sh,r,3,x.ma,st());put(sh,r,4,x.gia,st({n:3}));put(sh,r,5,x.sl,st());
       put(sh,r,6,{f:`D${r}*E${r}`,v:tt},st({n:3,h:'right'}));

@@ -234,9 +234,9 @@ function uList(){$('ul').innerHTML=S.units.map((u,i)=>{const n=S.rows.filter(r=>
 function uDel(i){const u=S.units[i];if(!u)return;if(uc!=i){uc=i;uList();return}S.rows=S.rows.filter(r=>r.dv!=u.dv);S.groups=S.groups.filter(g=>g.dv!=u.dv);S.units.splice(i,1);uc=-1;persist();uList();dvList();render();if(!$('p2').classList.contains('hide'))sum();if(!$('p3').classList.contains('hide'))cn()}
 let gd=null,GN=[];
 function grp(d,L){const gi={},fi={};S.groups.forEach((g,i)=>{if(g.dv==d)g.ids.forEach(id=>gi[id]=i)});
- L.forEach(x=>{const k=gi[x.id];if(k!==undefined&&(fi[k]===undefined||x.ngay<fi[k]))fi[k]=x.ngay});
+ const fd={};L.forEach(x=>{const k=gi[x.id];if(k!==undefined&&(fi[k]===undefined||x.ngay<fi[k]||(x.ngay==fi[k]&&x.id<fd[k]))){fi[k]=x.ngay;fd[k]=x.id}});
  const key=x=>gi[x.id]!==undefined?'m'+gi[x.id]:x.ngay,ord=x=>gi[x.id]!==undefined?fi[gi[x.id]]:x.ngay;
- const o=[...L].sort((a,b)=>ord(a)<ord(b)?-1:ord(a)>ord(b)?1:key(a)<key(b)?-1:key(a)>key(b)?1:a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id),G=[];
+ const fid=x=>gi[x.id]!==undefined?fd[gi[x.id]]:x.id,o=[...L].sort((a,b)=>ord(a)<ord(b)?-1:ord(a)>ord(b)?1:fid(a)-fid(b)||(key(a)<key(b)?-1:key(a)>key(b)?1:a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id)),G=[];
  o.forEach(x=>{const g=G[G.length-1];if(g&&key(g[0])==key(x))g.push(x);else G.push([x])});G.forEach(g=>{g.m=key(g[0])[0]=='m';g.gi=gi[g[0].id]});return G}
 function gOpen(i){gd=GN[i];$('gt').textContent=gd+' · tích chọn các mã muốn gộp thành 1 hàng Tổng (không cần liền ngày)';gList();$('gm').classList.remove('hide')}
 function gClose(){$('gm').classList.add('hide');gd=null;if(!$('p2').classList.contains('hide'))sum();if(!$('p3').classList.contains('hide'))cn()}

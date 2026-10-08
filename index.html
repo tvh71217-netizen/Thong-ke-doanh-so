@@ -34,7 +34,6 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 .t td{color:var(--red);font-weight:700}
 .sum{display:flex;justify-content:space-between;padding:6px 0}
 .hide{display:none}.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9}.mo.hide{display:none}.mb{background:var(--card);border-radius:14px;padding:16px;width:100%;max-width:400px}.ch{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.ch button{padding:8px 12px;border:1px solid var(--bd);border-radius:20px;background:var(--bg);color:var(--tx);font-size:14px}
-input[type=date]{-webkit-appearance:none;appearance:none;min-height:44px;text-align:left;display:block}
 </style></head><body>
 <h1 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Thống Kê Doanh Số<button onclick="xp()" style="border:1px solid var(--pri);background:var(--card);color:var(--pri);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600">Xuất Excel</button></h1>
 <div class="tabs"><button id="t1" class="on" onclick="tab(1)">Thống kê</button><button id="t2" onclick="tab(2)">Tổng kết</button><button id="t3" onclick="tab(3)">Công nợ</button></div>
@@ -45,7 +44,7 @@ input[type=date]{-webkit-appearance:none;appearance:none;min-height:44px;text-al
 <div><label>Khu vực</label><select id="kv" onchange="dvList()"></select></div></div>
 <div style="display:flex;gap:6px;margin-top:8px"><input id="newkv" placeholder="Thêm khu vực mới (VD: Bình Thạnh)"><button class="btn s" style="width:auto;margin:0;padding:0 14px" onclick="addKv()">Thêm</button></div>
 <div style="display:flex;justify-content:space-between;align-items:baseline"><label>Tên đơn vị</label><button onclick="uOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý / xoá đơn vị</button></div><input id="dv" list="dvl" oninput="pick()" onchange="pick()" placeholder="VD: Gara Thông Cao"><datalist id="dvl"></datalist><datalist id="mal"></datalist>
-<div class="g2"><div><label>Ngày giao</label><input id="ngay" type="hidden"><div style="display:flex;gap:4px"><select id="ngD" style="padding:10px 2px;text-align-last:center"></select><select id="ngM" style="padding:10px 2px;text-align-last:center"></select><select id="ngY" style="padding:10px 2px;text-align-last:center"></select></div></div>
+<div class="g2"><div><label>Ngày giao</label><input id="ngay" type="date"></div>
 <div><label>Mã hàng</label><input id="ma" list="mal" placeholder="DK 55B24L" autocapitalize="characters" style="text-transform:uppercase" oninput="const a=this.selectionStart,b=this.selectionEnd;this.value=this.value.toUpperCase();this.setSelectionRange(a,b)"></div></div>
 <div class="g2"><div><label>Giá</label><input id="gia" type="text" inputmode="numeric" placeholder="1600 = 1.600.000" oninput="calc()"><small id="gh" class="ok"></small></div>
 <div><label>Số lượng</label><input id="sl" type="number" inputmode="numeric" value="1" oninput="calc()"></div></div>
@@ -331,17 +330,4 @@ function xp(){
 kvOpts();dvList();calc();render();
 
 
-(function(){
- const el=$('ngay'),nd=$('ngD'),nm=$('ngM'),ny=$('ngY'),y0=new Date().getFullYear();
- nd.innerHTML='<option value="">Ngày</option>'+Array.from({length:31},(_,i)=>`<option>${i+1}</option>`).join('');
- nm.innerHTML='<option value="">Tháng</option>'+Array.from({length:12},(_,i)=>`<option>${i+1}</option>`).join('');
- ny.innerHTML='<option value="">Năm</option>'+[y0-1,y0,y0+1].map(y=>`<option>${y}</option>`).join('');
- const desc=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value'),p2=n=>String(n).padStart(2,'0');
- function fromSel(){if(!nd.value||!nm.value||!ny.value){desc.set.call(el,'');return}
-  const last=new Date(+ny.value,+nm.value,0).getDate(),d=Math.min(+nd.value,last);nd.value=d;
-  desc.set.call(el,ny.value+'-'+p2(nm.value)+'-'+p2(d))}
- [nd,nm,ny].forEach(x=>x.addEventListener('change',fromSel));
- Object.defineProperty(el,'value',{get(){return desc.get.call(el)},set(v){desc.set.call(el,v||'');const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(v||'');
-  if(m){if(![...ny.options].some(o=>o.value==m[1]))ny.add(new Option(m[1],m[1]));nd.value=+m[3];nm.value=+m[2];ny.value=m[1]}else{nd.value=nm.value=ny.value=''}}});
-})();
 </script></body></html>

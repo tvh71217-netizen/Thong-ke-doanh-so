@@ -229,7 +229,7 @@ function sum(){
    const rowH=g.map(r=>`<tr${bg}><td>${D(r.ngay)}</td><td>${r.ma}</td><td>${F(r.gia)}</td><td>${r.sl}</td><td>${F(tien(r))}</td><td>${sn(r,gm)}</td><td>${r.ck?r.ck+'%<br>'+F(ckt(r)):''}</td></tr>`).join('');
    if(!gm)return rowH;
    const nt=(S.groups[g.gi]&&S.groups[g.gi].payNote)||gnote(g);
-   return rowH+`<tr class="t"><td colspan="3">Tổng</td><td>${g.reduce((a,r)=>a+r.sl,0)}</td><td>${F(g.reduce((a,r)=>a+tien(r),0))}</td><td style="color:var(--tx)">${eA(nt)}</td><td>${F(g.reduce((a,r)=>a+ckt(r),0))}</td></tr>`}).join('')})()+
+   return rowH+`<tr class="t"><td colspan="3">Tổng</td><td>${g.reduce((a,r)=>a+r.sl,0)}</td><td>${F(g.reduce((a,r)=>a+tien(r),0))}</td><td style="color:var(--tx)">${eA(nt)}</td><td></td></tr>`}).join('')})()+
    `</table></div>`});
   h+='</div></div>'});
  $('sumv').innerHTML=(h||'<div class="card"><small>Chưa có dữ liệu cho kênh này</small></div>')+

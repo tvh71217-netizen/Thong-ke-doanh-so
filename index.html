@@ -183,12 +183,14 @@ function addKv(){const n=$('newkv').value.trim();if(!n)return;if(!S.regions.incl
 function dvIn(e){pick();const v=$('dv').value.trim().toLowerCase();if(e&&(e.inputType==='insertReplacementText'||!e.inputType)&&S.units.some(x=>x.dv.toLowerCase()==v))$('dv').blur()}
 function pick(){const v=$('dv').value.trim().toLowerCase();const u=S.units.find(x=>x.dv.toLowerCase()==v);if(u){if(S.regions.includes(u.kv))$('kv').value=u.kv;$('kenh').value=u.kenh;plOpts();$('plsel').value=(u.pls&&u.pls[0])||'';maList();plFill()}}
 function dvList(){maList();const k=$('kv').value;$('dvl').innerHTML=S.units.map(u=>`<option value="${u.dv}" label="${u.kv}">`).join('')}
+const nlFix=t=>String(t).replace(/\r\n?|\u2028|\u2029|\u0085|\u000b|\u000c/g,'\n').replace(/([,;]\s*\d[\d.,]*)(?=[A-Za-zÀ-ỹ])/g,'$1\n');
+function nlPaste(id,cb){const el=$(id);if(!el)return;el.addEventListener('paste',e=>{const cd=e.clipboardData;if(!cd)return;let t=cd.getData('text/plain');if(!t)return;e.preventDefault();t=nlFix(t);const a=el.selectionStart,b=el.selectionEnd,v=el.value;const pre=v.slice(0,a),pos=v.slice(b);const sep1=pre&&!pre.endsWith('\n')?'\n':'';el.value=pre+sep1+t+pos;const c=(pre+sep1+t).length;el.setSelectionRange(c,c);el.dispatchEvent(new Event('input'));if(cb)cb()})}
 const P=v=>{const n=+String(v).replace(/\D/g,'');return n&&n<10000?n*1000:n};
 function calc(){const g=P($('gia').value);$('gh').textContent=g?'= '+F(g):'';
  if(bb&&!g){const L=S.rows.filter(r=>bb.includes(r.id));$('tt_v').textContent=F(L.reduce((a,r)=>a+tien(r),0));$('ck_v').textContent=F(L.reduce((a,r)=>a+ckt(r),0));return}
  const t=g*$('sl').value;$('tt_v').textContent=F(t);$('ck_v').textContent=F(Math.round(t*$('ck').value/100))}
 function bParse(){const out=[],bad=[],num=x=>/^\d+([.,]\d+)?$/.test(x);
- $('bt').value.split('\n').forEach((ln,i)=>{ln=ln.trim();if(!ln)return;{const fu=ln.toUpperCase(),fp=plPrice(fu);if(fp){out.push({ma:fu,gia:fp,sl:1,ck:null});return}}let ma,gia=0,sl=1,ck=null;const p=ln.split(/\t|,|;/).map(x=>x.trim());while(p.length&&!p[p.length-1])p.pop();if(p.length==5&&/^\d+$/.test(p[3])&&/^\d+$/.test(p[4])){p[3]=p[3]+'.'+p[4];p.pop()}
+ nlFix($('bt').value).split('\n').forEach((ln,i)=>{ln=ln.trim();if(!ln)return;{const fu=ln.toUpperCase(),fp=plPrice(fu);if(fp){out.push({ma:fu,gia:fp,sl:1,ck:null});return}}let ma,gia=0,sl=1,ck=null;const p=ln.split(/\t|,|;/).map(x=>x.trim());while(p.length&&!p[p.length-1])p.pop();if(p.length==5&&/^\d+$/.test(p[3])&&/^\d+$/.test(p[4])){p[3]=p[3]+'.'+p[4];p.pop()}
   if(p.length>=2){ma=p[0];gia=P(p[1]);if(p[2])sl=+p[2].replace(/\D/g,'')||1;if(p[3]){const c=parseFloat(p[3].replace(',','.'));if(c>=0&&c<=100)ck=c}}
   else{const w=ln.split(/\s+/),t=[];while(w.length>1&&num(w[w.length-1])&&t.length<2)t.unshift(w.pop());if(t.length==2){gia=P(t[0]);sl=+t[1]||1}else if(t.length==1)gia=P(t[0]);ma=w.join(' ')}
   ma=(ma||'').toUpperCase();if(ma&&!gia)gia=plPrice(ma);if(ma&&gia)out.push({ma,gia,sl,ck});else bad.push(i+1)});
@@ -381,7 +383,7 @@ function plItems(){const p=plBy(plCur),e=$('plit');if(!p||!e)return;const q=($('
  e.innerHTML=ks.map(m=>`<div class="row"><div><b>${eA(m)}</b></div><div style="text-align:right;white-space:nowrap">${F(p.items[m])}<br><button onclick="plEdit('${plq(m)}')">Sửa</button><button onclick="plRm('${plq(m)}')">Xoá</button></div></div>`).join('')||'<small>'+(Object.keys(p.items).length?'Không có mã khớp':'Chưa có mã nào')+'</small>'}
 function plAdd(){const p=plBy(plCur);if(!p)return;const ma=$('pma').value.trim().toUpperCase(),g=P($('pgi').value);if(!ma||!g){$('pgh').textContent='Nhập mã và giá';$('pgh').className='no';return}
  p.items[ma]=g;persist();$('pma').value='';$('pgi').value='';$('pgh').textContent='';$('pgh').className='ok';plHead();plItems();plFill();$('pma').focus()}
-function plBulk(){const p=plBy(plCur);if(!p)return;let n=0;const bad=[];$('plbt').value.split('\n').forEach((ln,i)=>{ln=ln.trim();if(!ln)return;const m=ln.match(/^(.*?)\s*[\t;,]\s*([\d.,\s]+)$/)||ln.match(/^(.*\S)\s+([\d.,]+)$/);const ma=m?m[1].trim().toUpperCase():'',g=m?P(m[2]):0;if(ma&&g){p.items[ma]=g;n++}else bad.push(i+1)});
+function plBulk(){const p=plBy(plCur);if(!p)return;let n=0;const bad=[];nlFix($('plbt').value).split('\n').forEach((ln,i)=>{ln=ln.trim();if(!ln)return;const m=ln.match(/^(.*?)\s*[\t;,]\s*([\d.,\s]+)$/)||ln.match(/^(.*\S)\s+([\d.,]+)$/);const ma=m?m[1].trim().toUpperCase():'',g=m?P(m[2]):0;if(ma&&g){p.items[ma]=g;n++}else bad.push(i+1)});
  persist();$('plbs').className=bad.length?'no':'ok';$('plbs').textContent='Đã thêm/cập nhật '+n+' mã'+(bad.length?' · Dòng lỗi: '+bad.join(', '):'');if(!bad.length)$('plbt').value='';plHead();plItems();plFill()}
 function plEdit(s){const m=decodeURIComponent(s),p=plBy(plCur);if(!p)return;$('pma').value=m;$('pgi').value=p.items[m];$('pgi').dispatchEvent(new Event('input'));$('pgi').focus();$('pma').scrollIntoView({block:'center'})}
 function plRm(s){const m=decodeURIComponent(s),p=plBy(plCur);if(!p||!confirm('Xoá mã '+m+' khỏi '+p.name+'?'))return;delete p.items[m];persist();plHead();plItems();plFill()}
@@ -402,4 +404,5 @@ function xp(){
 kvOpts();plOpts();dvList();calc();render();
 
 
+nlPaste('bt');nlPaste('plbt');
 </script></body></html>

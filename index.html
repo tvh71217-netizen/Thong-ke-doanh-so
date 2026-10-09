@@ -185,6 +185,8 @@ function pick(){const v=$('dv').value.trim().toLowerCase();const u=S.units.find(
 function dvList(){maList();const k=$('kv').value;$('dvl').innerHTML=S.units.map(u=>`<option value="${u.dv}" label="${u.kv}">`).join('')}
 const nlFix=t=>String(t).replace(/\r\n?|\u2028|\u2029|\u0085|\u000b|\u000c/g,'\n').replace(/([,;]\s*\d[\d.,]*)(?=[A-Za-zÀ-ỹ])/g,'$1\n');
 function nlPaste(id,cb){const el=$(id);if(!el)return;el.addEventListener('paste',e=>{const cd=e.clipboardData;if(!cd)return;let t=cd.getData('text/plain');if(!t)return;e.preventDefault();t=nlFix(t);const a=el.selectionStart,b=el.selectionEnd,v=el.value;const pre=v.slice(0,a),pos=v.slice(b);const sep1=pre&&!pre.endsWith('\n')?'\n':'';el.value=pre+sep1+t+pos;const c=(pre+sep1+t).length;el.setSelectionRange(c,c);el.dispatchEvent(new Event('input'));if(cb)cb()})}
+function nlInput(id,cb){const el=$(id);if(!el)return;let last=el.value.length;el.addEventListener('input',()=>{const v=el.value;if(v.length-last>8){const f=nlFix(v);if(f!==v){el.value=f;const c=f.length;try{el.setSelectionRange(c,c)}catch(_){}if(cb)cb()}}last=el.value.length})}
+try{nlPaste('bt');nlPaste('plbt');nlInput('bt',()=>{try{bPrev()}catch(_){}});nlInput('plbt')}catch(e){console.error(e)}
 const P=v=>{const n=+String(v).replace(/\D/g,'');return n&&n<10000?n*1000:n};
 function calc(){const g=P($('gia').value);$('gh').textContent=g?'= '+F(g):'';
  if(bb&&!g){const L=S.rows.filter(r=>bb.includes(r.id));$('tt_v').textContent=F(L.reduce((a,r)=>a+tien(r),0));$('ck_v').textContent=F(L.reduce((a,r)=>a+ckt(r),0));return}
@@ -404,5 +406,4 @@ function xp(){
 kvOpts();plOpts();dvList();calc();render();
 
 
-nlPaste('bt');nlPaste('plbt');
 </script></body></html>

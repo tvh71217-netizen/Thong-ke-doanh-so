@@ -185,8 +185,12 @@ function pick(){const v=$('dv').value.trim().toLowerCase();const u=S.units.find(
 function dvList(){maList();const k=$('kv').value;$('dvl').innerHTML=S.units.map(u=>`<option value="${u.dv}" label="${u.kv}">`).join('')}
 const nlFix=t=>String(t).replace(/\r\n?|\u2028|\u2029|\u0085|\u000b|\u000c/g,'\n').replace(/([,;]\s*\d[\d.,]*)(?=[A-Za-zÀ-ỹ])/g,'$1\n');
 function nlPaste(id,cb){const el=$(id);if(!el)return;el.addEventListener('paste',e=>{const cd=e.clipboardData;if(!cd)return;let t=cd.getData('text/plain');if(!t)return;e.preventDefault();t=nlFix(t);const a=el.selectionStart,b=el.selectionEnd,v=el.value;const pre=v.slice(0,a),pos=v.slice(b);const sep1=pre&&!pre.endsWith('\n')?'\n':'';el.value=pre+sep1+t+pos;const c=(pre+sep1+t).length;el.setSelectionRange(c,c);el.dispatchEvent(new Event('input'));if(cb)cb()})}
-function nlInput(id,cb){const el=$(id);if(!el)return;let last=el.value.length;el.addEventListener('input',()=>{const v=el.value;if(v.length-last>8){const f=nlFix(v);if(f!==v){el.value=f;const c=f.length;try{el.setSelectionRange(c,c)}catch(_){}if(cb)cb()}}last=el.value.length})}
-try{nlPaste('bt');nlPaste('plbt');nlInput('bt',()=>{try{bPrev()}catch(_){}});nlInput('plbt');['change','blur','keyup'].forEach(ev=>$('plbt').addEventListener(ev,()=>{const el=$('plbt'),f=nlFix(el.value);if(f!==el.value)el.value=f}))}catch(e){console.error(e)}
+(function(){const ID={bt:1,plbt:1};
+document.addEventListener('paste',e=>{const el=e.target;if(!el||!ID[el.id])return;const cd=e.clipboardData;if(!cd)return;let t=cd.getData('text/plain');if(!t)return;e.preventDefault();t=nlFix(t);const a=el.selectionStart,b=el.selectionEnd,v=el.value;const pre=v.slice(0,a),pos=v.slice(b);const sep=pre&&!pre.endsWith('\n')?'\n':'';el.value=pre+sep+t+pos;const c=(pre+sep+t).length;try{el.setSelectionRange(c,c)}catch(_){}el.dispatchEvent(new Event('input',{bubbles:true}))},true);
+const last={};
+document.addEventListener('input',e=>{const el=e.target;if(!el||!ID[el.id])return;const v=el.value,l=last[el.id]||0;if(v.length-l>8){const f=nlFix(v);if(f!==v){el.value=f;try{el.setSelectionRange(f.length,f.length)}catch(_){}}}last[el.id]=el.value.length},true);
+['change','blur','keyup'].forEach(ev=>document.addEventListener(ev,e=>{const el=e.target;if(!el||!ID[el.id])return;const f=nlFix(el.value);if(f!==el.value)el.value=f},true));
+})();
 const P=v=>{const n=+String(v).replace(/\D/g,'');return n&&n<10000?n*1000:n};
 function calc(){const g=P($('gia').value);$('gh').textContent=g?'= '+F(g):'';
  if(bb&&!g){const L=S.rows.filter(r=>bb.includes(r.id));$('tt_v').textContent=F(L.reduce((a,r)=>a+tien(r),0));$('ck_v').textContent=F(L.reduce((a,r)=>a+ckt(r),0));return}
@@ -377,7 +381,7 @@ function plRender(){const L=S.pl.filter(p=>p.kenh==plK);if(!L.some(p=>p.id==plCu
 <div class="g2"><div><label>Mã</label><input id="pma" placeholder="DK 55B24L" autocapitalize="characters" style="text-transform:uppercase"></div><div><label>Giá</label><input id="pgi" type="text" inputmode="numeric" placeholder="1600 = 1.600.000" oninput="$('pgh').textContent=P(this.value)?'= '+F(P(this.value)):''"><small id="pgh" class="ok"></small></div></div>
 <button class="btn" onclick="plAdd()">Thêm / cập nhật giá</button>
 <button class="btn s" onclick="$('plbulk').classList.toggle('hide')">+ Dán nhiều mã</button>
-<div id="plbulk" class="hide"><textarea id="plbt" rows="6" placeholder="[v2 – tự tách dòng] Mỗi dòng: Mã, Giá&#10;DK 55B24L, 1.600&#10;RK 60044 1917" style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:16px;text-transform:uppercase"></textarea><button class="btn" onclick="plBulk()">Thêm tất cả</button><small id="plbs"></small></div></div>
+<div id="plbulk" class="hide"><textarea id="plbt" rows="6" placeholder="[v3 – tự tách dòng] Mỗi dòng: Mã, Giá&#10;DK 55B24L, 1.600&#10;RK 60044 1917" style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:16px;text-transform:uppercase"></textarea><button class="btn" onclick="plBulk()">Thêm tất cả</button><small id="plbs"></small></div></div>
 <div class="card"><input id="plq" placeholder="Tìm mã…" oninput="plItems()" style="text-transform:uppercase"><div id="plit"></div></div>`:'<div class="card"><small>Bấm "+ Bảng giá mới" để tạo (VD: Giá gara 1, Giá đại lý 2…)</small></div>';
  plItems();plUnits()}
 const plq=m=>encodeURIComponent(m).replace(/'/g,'%27');

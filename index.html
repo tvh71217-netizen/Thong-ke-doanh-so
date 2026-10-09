@@ -87,6 +87,8 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 <script>
 const $=id=>document.getElementById(id),F=n=>(+n||0).toLocaleString('vi-VN');
 const COL={'Gò Vấp':'#bdd7ee','Quận 9':'#ffe699','Quận 7':'#c6e0b4','Quận 8':'#f4b183','Tân Phú':'#b4c7e7'};
+const PAL=['#d9c3e8','#f8cbad','#b7e1cd','#fff2cc','#e2b8c7','#c9c9f0','#a9d8d8','#e6d3b3','#f4cccc','#d0e0b0','#ffd9a8','#bfe3f0'];
+function colOf(v){if(COL[v])return COL[v];const u=new Set(Object.values(COL)),ex=PAL.filter(c=>!u.has(c)),nc=(S.regions||[]).filter(r=>!COL[r]);let i=nc.indexOf(v);if(i<0){let h=0;for(const ch of String(v))h=(h*31+ch.charCodeAt(0))>>>0;i=nc.length+h}return ex[i%ex.length]}
 let S={rows:[],regions:['Gò Vấp','Quận 9','Quận 7','Quận 8','Tân Phú']},edit=null,K='gara';
 try{const d=localStorage.getItem('tkds');if(d)S=JSON.parse(d)}catch(e){}
 S.rows.forEach(r=>{if(r.ma)r.ma=r.ma.toUpperCase()});S.units=S.units||[];S.pl=S.pl||[];S.groups=(S.groups||[]).map(g=>g.ids?g:{dv:g.dv,ids:S.rows.filter(r=>r.dv==g.dv&&r.ngay>=g.from&&r.ngay<=g.to).map(r=>r.id)}).filter(g=>g.ids.length>1);S.rows.forEach(r=>{if(!S.units.some(u=>u.dv==r.dv))S.units.push({dv:r.dv,kv:r.kv,kenh:r.kenh,pls:[]})});S.units.forEach(u=>{if(!Array.isArray(u.pls))u.pls=u.pl?[u.pl]:[];delete u.pl});
@@ -103,8 +105,8 @@ function unpay(ids){ids.forEach(i=>{const r=S.rows.find(x=>x.id==i);if(r){r.tt=0
 let pm='';
 function pReset(){pm='';document.querySelectorAll('#mo .ch button').forEach(b=>b.classList.remove('on'));const d=new Date();$('pd').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');$('pn').value=''}
 function qp(b){const t=b.textContent;pm=pm==t?'':t;document.querySelectorAll('#mo .ch button').forEach(x=>x.classList.toggle('on',x.textContent==pm))}
-function ccAll(b,v){b.closest('.card').querySelectorAll('.cc').forEach(x=>x.checked=!!v)}
-function ccGo(b){const c=[...b.closest('.card').querySelectorAll('.cc:checked')].map(x=>+x.value);if(!c.length){b.textContent='Tích chọn mã trước';setTimeout(()=>b.textContent='Xác nhận đã tt',1500);return}pids=c;pid=null;const L=c.map(i=>S.rows.find(x=>x.id==i)).filter(Boolean);$('mi').textContent=L[0].dv+' · '+L.length+' mã · '+F(L.reduce((a,r)=>a+tien(r),0))+'đ'+(L.length>1?' · sẽ gộp thành 1 nhóm trong Tổng kết':'');pReset();$('mo').classList.remove('hide')}
+function ccAll(b,v){b.closest('.ub').querySelectorAll('.cc').forEach(x=>x.checked=!!v)}
+function ccGo(b){const c=[...b.closest('.ub').querySelectorAll('.cc:checked')].map(x=>+x.value);if(!c.length){b.textContent='Tích chọn mã trước';setTimeout(()=>b.textContent='Xác nhận đã tt',1500);return}pids=c;pid=null;const L=c.map(i=>S.rows.find(x=>x.id==i)).filter(Boolean);$('mi').textContent=L[0].dv+' · '+L.length+' mã · '+F(L.reduce((a,r)=>a+tien(r),0))+'đ'+(L.length>1?' · sẽ gộp thành 1 nhóm trong Tổng kết':'');pReset();$('mo').classList.remove('hide')}
 function cp(){pid=null;pids=null;$('mo').classList.add('hide')}
 function okp(){const dv=$('pd').value,ds=dv?D(dv):D(new Date().toISOString().slice(0,10)),t=$('pn').value.trim(),m=pm||'Đã tt',ids=pids||[pid],L=ids.map(i=>S.rows.find(x=>x.id==i)).filter(Boolean);if(!L.length)return cp();
 L.forEach(r=>{r.tt=1;r.pay=pm?m+' '+ds:'';r.payNote=''});
@@ -118,14 +120,17 @@ function gNote(i,v){if(S.groups[i]){S.groups[i].note=v.trim();persist()}}
 function cnRow(r,nt){return `<div class="row"><input type="checkbox" class="cc" value="${r.id}" style="width:20px;flex:none;align-self:center"><div style="flex:1">${D(r.ngay)} · ${r.ma}<br><small>${F(r.gia)} × ${r.sl}${nt&&r.note?' · '+r.note:''}</small></div><div style="text-align:right"><b>${F(tien(r))}</b><br><button class="no" style="color:var(--red);border-color:var(--red);font-weight:700" onclick="tg(${r.id})">Chưa tt</button></div></div>`}
 function cnRows(d,A){return grp(d,A).map(g=>{if(!g.m||g.length<2)return g.map(r=>cnRow(r,1)).join('');const N=[...new Set(g.map(r=>(r.note||'').trim()).filter(Boolean))],nt=gnote(g);return `<div class="gb" style="margin:6px 0;border:1.5px solid var(--bd);border-radius:10px;padding:0 8px;background:rgba(0,0,0,.025)">`+g.map(r=>cnRow(r,0)).join('')+`<div style="border-top:1px solid var(--bd);padding:6px 0"><input placeholder="📝 Ghi chú cho nhóm…" value="${eA(nt)}" onchange="gNote(${g.gi},this.value)" style="font-size:14px;padding:8px"></div>`+`<div class="tot" style="border-top:1px solid var(--bd)"><span>Tổng ${g.length} mã</span><span class="no">${F(g.reduce((a,r)=>a+tien(r),0))}</span></div><div style="text-align:right;padding-bottom:6px"><button onclick="gSelAll(this)" style="border:0;background:none;color:var(--c2);font-size:13px;padding:2px 4px">Chọn cả nhóm</button></div></div>`}).join('')}
 function gSelAll(b){const c=b.closest('.gb').querySelectorAll('.cc'),v=![...c].every(x=>x.checked);c.forEach(x=>x.checked=v)}
-function cn(){const L=S.rows.filter(r=>!r.tt);const us=[...new Set(L.map(r=>r.kenh+'|'+r.kv+'|'+r.dv))];let all=0;
- let h=us.map(u=>{const[k,v,d]=u.split('|');const A=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);const t=A.reduce((a,r)=>a+tien(r),0);all+=t;
- return `<div class="card" style="padding:0;overflow:hidden"><div class="kv" style="background:${COL[v]||'#ddd'};color:#111;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 10px"><span>${d} <small style="font-weight:400">· ${KN[k]} · ${v}</small></span><button onclick="gOpen(${GN.push(d)-1})" style="flex:none;margin-left:auto;border:0;background:none;color:#1a56b0;font-size:13px;font-weight:600;padding:0">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div style="padding:0 10px 8px">`+cnRows(d,A)+`<div class="tot"><span>Còn nợ</span><span class="no">${F(t)}</span></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="ccAll(this,1)">Chọn hết</button><button class="btn" style="margin-top:0" onclick="ccGo(this)">Xác nhận đã tt</button></div></div></div>`}).join('');
+function cn(){const L=S.rows.filter(r=>!r.tt),us=pKeys();let all=0;
+ const unitH=u=>{const[k,v,d]=u.split('|');const A=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);const t=A.reduce((a,r)=>a+tien(r),0);all+=t;
+  return {t,h:`<div class="ub" style="padding:8px 10px;border-top:1px solid var(--bd)"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 10px;padding:2px 0 4px"><span><b>${d}</b> <small style="color:var(--mu)">· ${KN[k]}</small></span><button onclick="gOpen(${GN.push(d)-1})" style="flex:none;margin-left:auto;border:0;background:none;color:#1a56b0;font-size:13px;font-weight:600;padding:0">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div>`+cnRows(d,A)+`<div class="tot"><span>Còn nợ</span><span class="no">${F(t)}</span></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="ccAll(this,1)">Chọn hết</button><button class="btn" style="margin-top:0" onclick="ccGo(this)">Xác nhận đã tt</button></div></div>`}};
+ let h=[...new Set(us.map(u=>u.split('|')[1]))].map(v=>{const R=us.filter(u=>u.split('|')[1]==v).map(unitH),rt=R.reduce((a,x)=>a+x.t,0);
+  return `<div class="card" style="padding:0;overflow:hidden"><div class="kv" style="background:${colOf(v)};color:#111;display:flex;justify-content:space-between;align-items:center;gap:8px"><span>${v}</span><span style="font-size:14px">${R.length} đơn vị · ${F(rt)}</span></div>${R.map(x=>x.h).join('')}</div>`}).join('');
  $('cnv').innerHTML=(h?'<div style="padding:0 12px 10px"><button class="btn" style="margin-top:0" onclick="pOpen()">Xuất công nợ PDF</button></div>':'')+(h||'<div class="card"><small>Không có công nợ 🎉</small></div>')+(h?`<div class="card"><div class="tot"><span>Tổng công nợ (${us.length} đơn vị)</span><span class="no">${F(all)}</span></div></div>`:'')}
 let pU=[];
-function pKeys(){const L=S.rows.filter(r=>!r.tt);return[...new Set(L.map(r=>r.kenh+'|'+r.kv+'|'+r.dv))]}
+function pKeys(){const L=S.rows.filter(r=>!r.tt),ks=[...new Set(L.map(r=>r.kenh+'|'+r.kv+'|'+r.dv))];return[...new Set(ks.map(u=>u.split('|')[1]))].flatMap(v=>ks.filter(u=>u.split('|')[1]==v))}
 function pOpen(){const L=S.rows.filter(r=>!r.tt);pU=pKeys();if(!pU.length)return;
- $('pl').innerHTML=pU.map((u,i)=>{const[k,v,d]=u.split('|'),t=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).reduce((a,r)=>a+tien(r),0);return `<label style="display:flex;align-items:center;gap:8px;margin:0;padding:8px 0;border-top:1px solid var(--bd);font-size:14px;color:var(--tx)"><input type="checkbox" class="pc" value="${i}" checked onchange="pSel()" style="width:auto"><span style="flex:1">${d}<br><small style="color:var(--mu)">${KN[k]} · ${v}</small></span><b class="no">${F(t)}</b></label>`}).join('');pSel();$('pm').classList.remove('hide')}
+ let pv='';const rh=v=>v!=pv?(pv=v,`<div style="background:${colOf(v)};color:#111;font-weight:700;font-size:14px;padding:6px 8px;border-radius:6px;margin-top:8px">${v}</div>`):'';
+ $('pl').innerHTML=pU.map((u,i)=>{const[k,v,d]=u.split('|'),t=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).reduce((a,r)=>a+tien(r),0);return rh(v)+`<label style="display:flex;align-items:center;gap:8px;margin:0;padding:8px 0;border-top:1px solid var(--bd);font-size:14px;color:var(--tx)"><input type="checkbox" class="pc" value="${i}" checked onchange="pSel()" style="width:auto"><span style="flex:1">${d}<br><small style="color:var(--mu)">${KN[k]}</small></span><b class="no">${F(t)}</b></label>`}).join('');pSel();$('pm').classList.remove('hide')}
 function pClose(){$('pm').classList.add('hide')}
 function pAll(v){document.querySelectorAll('#pl .pc').forEach(x=>x.checked=!!v);pSel()}
 function pSel(){const c=[...document.querySelectorAll('#pl .pc:checked')],L=S.rows.filter(r=>!r.tt);let t=0;c.forEach(x=>{const[k,v,d]=pU[x.value].split('|');t+=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).reduce((a,r)=>a+tien(r),0)});$('ps').textContent=c.length?`Đã chọn ${c.length}/${pU.length} đơn vị · ${F(t)}`:'Chưa chọn đơn vị nào'}
@@ -150,9 +155,13 @@ function pdfBuild(keys){
  np();c.fillStyle='#000';c.textAlign='center';c.font='bold 17px '+FT;c.fillText('BẢNG THEO DÕI CÔNG NỢ',W/2,y+10);y+=22;
  const n=new Date();c.font='11px '+FT;c.fillStyle='#555';c.fillText('Ngày xuất: '+n.getDate()+'/'+(n.getMonth()+1)+'/'+n.getFullYear(),W/2,y+6);y+=24;
  const L=S.rows.filter(r=>!r.tt);let all=0;
+ let pr='';
  keys.forEach(u=>{const[k,v,d]=u.split('|'),A=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id),t=A.reduce((a,r)=>a+tien(r),0);all+=t;
+  if(v!=pr){pr=v;const rt=keys.filter(x=>x.split('|')[1]==v).reduce((a,x)=>{const[k2,v2,d2]=x.split('|');return a+L.filter(r=>r.kenh==k2&&r.kv==v2&&r.dv==d2).reduce((s,r)=>s+tien(r),0)},0);
+   if(y+24+22+22+30>H-M)np();else y+=8;
+   c.fillStyle=colOf(v);c.fillRect(M,y,cw,24);c.strokeStyle='#999';c.lineWidth=.6;c.strokeRect(M,y,cw,24);c.fillStyle='#000';c.font='bold 13px '+FT;c.textAlign='left';c.fillText(v,M+8,y+12.5);c.fillStyle='#d12a2a';c.textAlign='right';c.fillText(F(rt),M+cw-8,y+12.5);y+=24}
   if(y+22+22+30>H-M){np()}else y+=8;
-  unit(d+' · '+KN[k]+' · '+v,COL[v]||'#ddd');
+  unit(d+' · '+KN[k],colOf(v));
   A.forEach(r=>row([D(r.ngay),r.ma,F(r.gia),String(r.sl),F(tien(r)),r.note||'']));
   row(['','Còn nợ','',String(A.reduce((a,r)=>a+r.sl,0)),F(t),''],{b:1,c:'#d12a2a'});hd=null});
  if(y+30>H-M)np();y+=12;c.font='bold 14px '+FT;c.fillStyle='#d12a2a';c.textAlign='right';c.fillText('TỔNG CÔNG NỢ: '+F(all),W-M,y+8);
@@ -218,12 +227,12 @@ function sum(){
  const rows=S.rows.filter(r=>r.kenh==K);let h='',T=0,Q=0,C=0,U=0;
  const kvs=[...new Set(rows.map(r=>r.kv))];
  kvs.forEach(k=>{
-  h+=`<div class="card" style="padding:0;overflow:hidden"><div class="kv" style="background:${COL[k]||'#ddd'};color:#111">${k}</div><div style="padding:0 8px 8px">`;
+  h+=`<div class="card" style="padding:0;overflow:hidden"><div class="kv" style="background:${colOf(k)};color:#111">${k}</div><div style="padding:0 8px 8px">`;
   [...new Set(rows.filter(r=>r.kv==k).map(r=>r.dv))].forEach(d=>{
    const L=rows.filter(r=>r.kv==k&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
    const t=L.reduce((a,r)=>a+tien(r),0),q=L.reduce((a,r)=>a+r.sl,0),c=L.reduce((a,r)=>a+ckt(r),0),u=L.filter(r=>!r.tt).reduce((a,r)=>a+tien(r),0);
    T+=t;Q+=q;C+=c;U+=u;
-   h+=`<div class="dv" style="background:${COL[k]||'#ddd'}">${d}</div><div style="text-align:right"><button onclick="gOpen(${GN.push(d)-1})" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div class="tw"><table><tr><th>Ngày giao</th><th>Tên Hàng Hoá</th><th>Giá</th><th>SL</th><th>Thành Tiền</th><th>Ghi chú</th><th>CK</th></tr>`+
+   h+=`<div class="dv" style="background:${colOf(k)}">${d}</div><div style="text-align:right"><button onclick="gOpen(${GN.push(d)-1})" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div class="tw"><table><tr><th>Ngày giao</th><th>Tên Hàng Hoá</th><th>Giá</th><th>SL</th><th>Thành Tiền</th><th>Ghi chú</th><th>CK</th></tr>`+
    (()=>{const G=grp(d,L);
    return G.map(g=>{const gm=g.m&&g.length>1,bg=gm?' style="background:rgba(0,0,0,.035)"':'';
    const rowH=g.map(r=>`<tr${bg}><td>${D(r.ngay)}</td><td>${r.ma}</td><td>${F(r.gia)}</td><td>${r.sl}</td><td>${F(tien(r))}</td><td>${sn(r,gm)}</td><td>${r.ck?r.ck+'%<br>'+F(ckt(r)):''}</td></tr>`).join('');
@@ -290,7 +299,7 @@ function buildXlsx(){
   let r=2,sE=0,sF=0,sI=0,sU=0;
   if(!data.length){mg(sh,2,1,2,NC,'Không có dữ liệu',st());return[sh,debt?[14,12,24,14,7,16,28]:[14,12,24,14,7,16,28,8,13]]}
   const kvs=[...S.regions.filter(x=>data.some(d=>d.kv==x)),...[...new Set(data.map(d=>d.kv))].filter(x=>!S.regions.includes(x))];
-  kvs.forEach(k=>{const bg=(COL[k]||'#dddddd').replace('#','').toUpperCase(),a0=r;
+  kvs.forEach(k=>{const bg=colOf(k).replace('#','').toUpperCase(),a0=r;
    [...new Set(data.filter(d=>d.kv==k).map(d=>d.dv))].forEach(d=>{
     const L=data.filter(x=>x.kv==k&&x.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
     mg(sh,r,2,r,NC,d,st({b:1,f:bg}));r++;

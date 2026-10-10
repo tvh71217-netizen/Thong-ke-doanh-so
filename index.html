@@ -150,20 +150,17 @@ function pdfBuild(keys){
   if(y+h>H-M){np();if(hd)unit(hd.t,hd.bg,1);c.font=(o.b?'bold ':'')+'10.5px '+FT}
   cells.forEach((t,i)=>{if(o.f){c.fillStyle=o.f;c.fillRect(X[i],y,cols[i],h)}c.strokeStyle='#999';c.lineWidth=.6;c.strokeRect(X[i],y,cols[i],h);c.fillStyle=o.c||'#000';c.textAlign='center';
    const l=ls[i],y0=y+(h-l.length*13)/2+6.5;l.forEach((q,j)=>c.fillText(q,X[i]+cols[i]/2,y0+j*13))});y+=h};
- const colh=()=>row(['Ngày giao','Tên Hàng Hoá','Giá','SL','Thành Tiền','Ghi chú'],{b:1,f:'#8dc63f',c:'#fff'});
+ const colh=()=>row(['Ngày giao','Tên Hàng Hoá','Giá','SL','Thành Tiền','Ghi chú'],{b:1,f:'#e3e3e3',c:'#000'});
  const unit=(t,bg,cont)=>{hd={t,bg};c.fillStyle=bg;c.fillRect(M,y,cw,22);c.strokeStyle='#999';c.lineWidth=.6;c.strokeRect(M,y,cw,22);c.fillStyle='#000';c.font='bold 12px '+FT;c.textAlign='left';c.fillText(t+(cont?' (tiếp)':''),M+8,y+11.5);y+=22;colh()};
  np();c.fillStyle='#000';c.textAlign='center';c.font='bold 17px '+FT;c.fillText('BẢNG THEO DÕI CÔNG NỢ',W/2,y+10);y+=22;
  const n=new Date();c.font='11px '+FT;c.fillStyle='#555';c.fillText('Ngày xuất: '+n.getDate()+'/'+(n.getMonth()+1)+'/'+n.getFullYear(),W/2,y+6);y+=24;
  const L=S.rows.filter(r=>!r.tt);let all=0;
  let pr='';
  keys.forEach(u=>{const[k,v,d]=u.split('|'),A=L.filter(r=>r.kenh==k&&r.kv==v&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id),t=A.reduce((a,r)=>a+tien(r),0);all+=t;
-  if(v!=pr){pr=v;const rt=keys.filter(x=>x.split('|')[1]==v).reduce((a,x)=>{const[k2,v2,d2]=x.split('|');return a+L.filter(r=>r.kenh==k2&&r.kv==v2&&r.dv==d2).reduce((s,r)=>s+tien(r),0)},0);
-   if(y+24+22+22+30>H-M)np();else y+=8;
-   c.fillStyle=colOf(v);c.fillRect(M,y,cw,24);c.strokeStyle='#999';c.lineWidth=.6;c.strokeRect(M,y,cw,24);c.fillStyle='#000';c.font='bold 13px '+FT;c.textAlign='left';c.fillText(v,M+8,y+12.5);c.fillStyle='#d12a2a';c.textAlign='right';c.fillText(F(rt),M+cw-8,y+12.5);y+=24}
   if(y+22+22+30>H-M){np()}else y+=8;
-  unit(d+' · '+KN[k],colOf(v));
+  unit(d+' . '+v,colOf(v));
   A.forEach(r=>row([D(r.ngay),r.ma,F(r.gia),String(r.sl),F(tien(r)),r.note||'']));
-  row(['','Còn nợ','',String(A.reduce((a,r)=>a+r.sl,0)),F(t),''],{b:1,c:'#d12a2a'});hd=null});
+  row(['','Tổng','',String(A.reduce((a,r)=>a+r.sl,0)),F(t),''],{b:1,c:'#d12a2a'});hd=null});
  if(y+30>H-M)np();y+=12;c.font='bold 14px '+FT;c.fillStyle='#d12a2a';c.textAlign='right';c.fillText('TỔNG CÔNG NỢ: '+F(all),W-M,y+8);
  const im=pg.map(q=>{const b=atob(q.toDataURL('image/jpeg',.92).split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return{w:q.width,h:q.height,data:u}});
  const en=new TextEncoder(),parts=[],off=[];let len=0;

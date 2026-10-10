@@ -358,7 +358,7 @@ function buildXlsx(){
  return new Blob([...parts,...cen,new Uint8Array(e.buffer)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
 
 /* ===== Tab Giá ===== */
-let plK='gara',plCur=null;
+let plK='gara',plCur=null,plEd=null,plSrch=[],plQ='';
 function uCur(){const d=$('dv').value.trim().toLowerCase();return S.units.find(x=>x.dv.toLowerCase()==d)}
 function plSet(){const u=uCur(),k=$('kenh').value,s=+$('plsel').value,a=[];if(s)a.push(s);((u&&u.pls)||[]).forEach(x=>{if(!a.includes(x))a.push(x)});return a.map(plBy).filter(p=>p&&p.kenh==k)}
 function plFind(ma){ma=String(ma||'').trim().toUpperCase();if(!ma)return null;for(const p of plSet())if(p.items[ma])return{p,g:p.items[ma]};return null}
@@ -373,23 +373,32 @@ function plFill(fromMa){const ma=$('ma').value.trim().toUpperCase(),f=plFind(ma)
 function plSeg(b){plK=b.dataset.k;document.querySelectorAll('#plseg button').forEach(x=>x.classList.toggle('on',x==b));plCur=null;plRender()}
 function plHead(){const L=S.pl.filter(p=>p.kenh==plK);$('plc').innerHTML=L.length?L.map(p=>`<option value="${p.id}">${eA(p.name)} (${Object.keys(p.items).length} mã)</option>`).join(''):'<option value="">Chưa có bảng giá</option>';$('plc').value=plCur||''}
 function plSel(){plCur=+$('plc').value||null;plRender()}
-function plRender(){const L=S.pl.filter(p=>p.kenh==plK);if(!L.some(p=>p.id==plCur))plCur=L.length?L[0].id:null;plHead();const p=plBy(plCur);
+function plRender(){plEd=null;const L=S.pl.filter(p=>p.kenh==plK);if(!L.some(p=>p.id==plCur))plCur=L.length?L[0].id:null;plHead();const p=plBy(plCur);
  $('plbody').innerHTML=p?`<div class="card"><b>${eA(p.name)}</b> <small style="color:var(--mu)">· ${KN[p.kenh]}</small>
 <div class="g2"><div><label>Mã</label><input id="pma" placeholder="DK 55B24L" autocapitalize="characters" style="text-transform:uppercase"></div><div><label>Giá</label><input id="pgi" type="text" inputmode="numeric" placeholder="1600 = 1.600.000" oninput="$('pgh').textContent=P(this.value)?'= '+F(P(this.value)):''"><small id="pgh" class="ok"></small></div></div>
-<button class="btn" onclick="plAdd()">Thêm / cập nhật giá</button>
+<button class="btn" id="pladd" onclick="plAdd()">Thêm / cập nhật giá</button>
+<button class="btn s hide" id="plcan" onclick="plCan()">Huỷ sửa</button>
 <button class="btn s" onclick="$('plbulk').classList.toggle('hide')">+ Dán nhiều mã</button>
 <div id="plbulk" class="hide"><textarea id="plbt" rows="6" placeholder="[v3 – tự tách dòng] Mỗi dòng: Mã, Giá&#10;DK 55B24L, 1.600&#10;RK 60044 1917" style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:16px;text-transform:uppercase"></textarea><button class="btn" onclick="plBulk()">Thêm tất cả</button><small id="plbs"></small></div></div>
-<div class="card"><input id="plq" placeholder="Tìm mã…" oninput="plItems()" style="text-transform:uppercase"><div id="plit"></div></div>`:'<div class="card"><small>Bấm "+ Bảng giá mới" để tạo (VD: Giá gara 1, Giá đại lý 2…)</small></div>';
+<div class="card"><input id="plq" placeholder="Tìm mã…" value="${eA(plQ)}" oninput="plQ=this.value;plItems()" style="text-transform:uppercase"><div id="plsc"></div><div id="plit"></div></div>`:'<div class="card"><small>Bấm "+ Bảng giá mới" để tạo (VD: Giá gara 1, Giá đại lý 2…)</small></div>';
  plItems();plUnits()}
 const plq=m=>encodeURIComponent(m).replace(/'/g,'%27');
-function plItems(){const p=plBy(plCur),e=$('plit');if(!p||!e)return;const q=($('plq').value||'').trim().toUpperCase(),ks=Object.keys(p.items).sort().filter(m=>!q||m.includes(q));
- e.innerHTML=ks.map(m=>`<div class="row"><div><b>${eA(m)}</b></div><div style="text-align:right;white-space:nowrap">${F(p.items[m])}<br><button onclick="plEdit('${plq(m)}')">Sửa</button><button onclick="plRm('${plq(m)}')">Xoá</button></div></div>`).join('')||'<small>'+(Object.keys(p.items).length?'Không có mã khớp':'Chưa có mã nào')+'</small>'}
+function plSrchTog(id){const k=plSrch.indexOf(id);if(k<0)plSrch.push(id);else plSrch.splice(k,1);plItems()}
+function plItems(){const p=plBy(plCur),e=$('plit');if(!p||!e)return;
+ const oth=S.pl.filter(x=>x.kenh==plK&&x.id!=plCur);plSrch=plSrch.filter(id=>oth.some(x=>x.id==id));
+ const sc=$('plsc');if(sc)sc.innerHTML=oth.length?'<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 2px"><small style="color:var(--mu)">Tìm thêm trong:</small>'+oth.map(x=>{const on=plSrch.includes(x.id);return `<button onclick="plSrchTog(${x.id})" style="border:1px solid ${on?'var(--c2)':'var(--bd)'};background:${on?'var(--c2)':'transparent'};color:${on?'#fff':'var(--tx)'};border-radius:16px;padding:6px 12px;font-size:13px">${on?'✓ ':'+ '}${eA(x.name)}</button>`}).join('')+'</div>':'';
+ const q=($('plq').value||'').trim().toUpperCase(),Ls=[p].concat(plSrch.map(plBy).filter(Boolean)),multi=Ls.length>1,A=[];
+ Ls.forEach(l=>Object.keys(l.items).forEach(m=>{if(!q||m.includes(q))A.push({l,m})}));A.sort((a,b)=>a.m<b.m?-1:a.m>b.m?1:a.l.id-b.l.id);
+ e.innerHTML=A.map(({l,m})=>`<div class="row"><div><b>${eA(m)}</b>${multi?`<br><small style="color:var(--mu)">${eA(l.name)}</small>`:''}</div><div style="text-align:right;white-space:nowrap">${F(l.items[m])}<br><button onclick="plEdit('${plq(m)}',${l.id})">Sửa</button><button onclick="plRm('${plq(m)}',${l.id})">Xoá</button></div></div>`).join('')||'<small>'+(Ls.some(l=>Object.keys(l.items).length)?'Không có mã khớp':'Chưa có mã nào')+'</small>'}
 function plAdd(){const p=plBy(plCur);if(!p)return;const ma=$('pma').value.trim().toUpperCase(),g=P($('pgi').value);if(!ma||!g){$('pgh').textContent='Nhập mã và giá';$('pgh').className='no';return}
- p.items[ma]=g;persist();$('pma').value='';$('pgi').value='';$('pgh').textContent='';$('pgh').className='ok';plHead();plItems();plFill();$('pma').focus()}
+ if(plEd&&plEd!==ma){if(p.items[ma]!==undefined&&!confirm('Mã '+ma+' đã có trong bảng giá. Ghi đè?'))return;delete p.items[plEd]}
+ p.items[ma]=g;plEd=null;plBtn();persist();$('pma').value='';$('pgi').value='';$('pgh').textContent='';$('pgh').className='ok';plHead();plItems();plFill();$('pma').focus()}
+function plBtn(){const b=$('pladd'),c=$('plcan');if(b)b.textContent=plEd?'Lưu thay đổi':'Thêm / cập nhật giá';if(c)c.classList.toggle('hide',!plEd)}
+function plCan(){plEd=null;plBtn();$('pma').value='';$('pgi').value='';$('pgh').textContent=''}
 function plBulk(){const p=plBy(plCur);if(!p)return;let n=0;const bad=[];nlFix($('plbt').value).split('\n').forEach((ln,i)=>{ln=ln.trim();if(!ln)return;const m=ln.match(/^(.*?)\s*[\t;,]\s*([\d.,\s]+)$/)||ln.match(/^(.*\S)\s+([\d.,]+)$/);const ma=m?m[1].trim().toUpperCase():'',g=m?P(m[2]):0;if(ma&&g){p.items[ma]=g;n++}else bad.push(i+1)});
  persist();$('plbs').className=bad.length?'no':'ok';$('plbs').textContent='Đã thêm/cập nhật '+n+' mã'+(bad.length?' · Dòng lỗi: '+bad.join(', '):'');if(!bad.length)$('plbt').value='';plHead();plItems();plFill()}
-function plEdit(s){const m=decodeURIComponent(s),p=plBy(plCur);if(!p)return;$('pma').value=m;$('pgi').value=p.items[m];$('pgi').dispatchEvent(new Event('input'));$('pgi').focus();$('pma').scrollIntoView({block:'center'})}
-function plRm(s){const m=decodeURIComponent(s),p=plBy(plCur);if(!p||!confirm('Xoá mã '+m+' khỏi '+p.name+'?'))return;delete p.items[m];persist();plHead();plItems();plFill()}
+function plEdit(s,pid){if(pid&&pid!=plCur){plCur=pid;plRender()}const m=decodeURIComponent(s),p=plBy(plCur);if(!p)return;plEd=m;plBtn();$('pma').value=m;$('pgi').value=p.items[m];$('pgi').dispatchEvent(new Event('input'));$('pgi').focus();$('pma').scrollIntoView({block:'center'})}
+function plRm(s,pid){const m=decodeURIComponent(s),p=plBy(pid||plCur);if(!p||!confirm('Xoá mã '+m+' khỏi '+p.name+'?'))return;delete p.items[m];if(plEd===m&&p.id==plCur)plCan();persist();plHead();plItems();plFill()}
 function plNew(){const n=(prompt('Tên bảng giá (VD: Giá gara 1)')||'').trim();if(!n)return;const p={id:Date.now(),name:n,kenh:plK,items:{}};S.pl.push(p);plCur=p.id;persist();plOpts();plRender()}
 function plRen(){const p=plBy(plCur);if(!p)return;const n=(prompt('Đổi tên bảng giá',p.name)||'').trim();if(!n)return;p.name=n;persist();plOpts();plRender()}
 function plDel(){const p=plBy(plCur);if(!p||!confirm('Xoá "'+p.name+'" ('+Object.keys(p.items).length+' mã)? Các đơn vị đang dùng sẽ bỏ liên kết. Dòng đã nhập trước đó giữ nguyên giá.'))return;S.pl=S.pl.filter(x=>x.id!=p.id);S.units.forEach(u=>{u.pls=(u.pls||[]).filter(x=>x!=p.id)});plCur=null;persist();plOpts();plRender()}

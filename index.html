@@ -100,7 +100,7 @@ const KN={gara:'Gara',daily:'Đại lý',lop:'Lốp xe'};
 function tab(n){[1,2,3,4].forEach(i=>{$('p'+i).classList.toggle('hide',n!=i);$('t'+i).classList.toggle('on',n==i)});if(n==2)sum();if(n==3)cn();if(n==4)plRender()}
 let bb=null,pid=null,pids=null;
 function tg(id){const r=S.rows.find(x=>x.id==id);if(r.tt){unpay([id]);persist();render();cn();return}pid=id;$('mi').textContent=r.dv+' · '+r.ma+' · '+F(cnT(r))+'đ';pReset();$('mo').classList.remove('hide')}
-function sn(r,gm){if(!r.tt)return(!gm&&r.note?r.note+'<br>':'')+'<span class="no">Chưa tt</span>';const a=[];if(!gm&&r.note)a.push(r.note);if(r.pay&&r.pay.trim().toLowerCase()!='đã tt')a.push(r.pay);if(!gm&&r.payNote)a.push(eA(r.payNote));return a.length?a.join('<br>'):'Đã tt'}
+function sn(r,gm){if(!r.tt)return(!gm&&r.note?r.note+'<br>':'')+(isDu(r)?'<span class="ok"><b>Dư</b></span>':'<span class="no">Chưa tt</span>');const a=[];if(!gm&&r.note)a.push(r.note);if(r.pay&&r.pay.trim().toLowerCase()!='đã tt')a.push(r.pay);if(!gm&&r.payNote)a.push(eA(r.payNote));return a.length?a.join('<br>'):'Đã tt'}
 function unpay(ids){ids.forEach(i=>{const r=S.rows.find(x=>x.id==i);if(r){r.tt=0;r.pay='';r.payNote=''}S.groups.forEach(g=>{if(g.ids.includes(+i))delete g.payNote})})}
 let pm='';
 function pReset(){pm='';document.querySelectorAll('#mo .ch button').forEach(b=>b.classList.remove('on'));const d=new Date();$('pd').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');$('pn').value=''}
@@ -235,15 +235,15 @@ function sum(){
   h+=`<div class="card" style="padding:0;overflow:hidden"><div class="kv" style="background:${colOf(k)};color:#111">${k}</div><div style="padding:0 8px 8px">`;
   [...new Set(rows.filter(r=>r.kv==k).map(r=>r.dv))].forEach(d=>{
    const L=rows.filter(r=>r.kv==k&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
-   const t=L.reduce((a,r)=>a+tien(r),0),q=L.reduce((a,r)=>a+r.sl,0),c=L.reduce((a,r)=>a+ckt(r),0),u=L.filter(r=>!r.tt).reduce((a,r)=>a+tien(r),0);
+   const t=L.reduce((a,r)=>a+cnT(r),0),q=L.reduce((a,r)=>a+(isDu(r)?0:r.sl),0),c=L.reduce((a,r)=>a+ckt(r),0),u=L.filter(r=>!r.tt).reduce((a,r)=>a+cnT(r),0);
    T+=t;Q+=q;C+=c;U+=u;
    h+=`<div class="dv" style="background:${colOf(k)}">${d}</div><div style="text-align:right"><button onclick="gOpen(${GN.push(d)-1})" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div class="tw"><table><tr><th>Ngày giao</th><th>Tên Hàng Hoá</th><th>Giá</th><th>SL</th><th>Thành Tiền</th><th>Ghi chú</th><th>CK</th></tr>`+
    (()=>{const G=grp(d,L);
    return G.map(g=>{const gm=g.m&&g.length>1,bg=gm?' style="background:rgba(0,0,0,.035)"':'';
-   const rowH=g.map(r=>`<tr${bg}><td>${D(r.ngay)}</td><td>${r.ma}</td><td>${F(r.gia)}</td><td>${r.sl}</td><td>${F(tien(r))}</td><td>${sn(r,gm)}</td><td>${r.ck?r.ck+'%<br>'+F(ckt(r)):''}</td></tr>`).join('');
+   const rowH=g.map(r=>`<tr${bg}><td>${D(r.ngay)}</td><td>${r.ma}</td><td>${F(r.gia)}</td><td>${r.sl}</td><td${isDu(r)?' class="ok"':''}>${F(cnT(r))}</td><td>${sn(r,gm)}</td><td>${r.ck?r.ck+'%<br>'+F(ckt(r)):''}</td></tr>`).join('');
    if(!gm)return rowH;
    const nt=(S.groups[g.gi]&&S.groups[g.gi].payNote)||gnote(g);
-   return rowH+`<tr class="t"><td colspan="3">Tổng</td><td>${g.reduce((a,r)=>a+r.sl,0)}</td><td>${F(g.reduce((a,r)=>a+tien(r),0))}</td><td style="color:var(--tx)">${eA(nt)}</td><td></td></tr>`}).join('')})()+
+   return rowH+`<tr class="t"><td colspan="3">Tổng</td><td>${g.reduce((a,r)=>a+(isDu(r)?0:r.sl),0)}</td><td>${F(g.reduce((a,r)=>a+cnT(r),0))}</td><td style="color:var(--tx)">${eA(nt)}</td><td></td></tr>`}).join('')})()+
    `</table></div>`});
   h+='</div></div>'});
  $('sumv').innerHTML=(h||'<div class="card"><small>Chưa có dữ liệu cho kênh này</small></div>')+
@@ -311,7 +311,7 @@ function buildXlsx(){
     ['Ngày giao','Tên Hàng Hoá','Giá','SL','Thành Tiền','Ghi chú'].concat(debt?[]:['CK %','Tiền CK']).forEach((h,i)=>put(sh,r,i+2,h,st({b:1,f:'8DC63F'})));r++;
     const G=grp(d,L);
     G.forEach(g=>{const f0=r;let q=0,t=0,c=0;
-     g.forEach(x=>{const du=debt&&isDu(x),tt=du?-tien(x):tien(x),ck=ckt(x);q+=x.sl;t+=tt;c+=ck;if(!x.tt)sU+=tt;
+     g.forEach(x=>{const du=isDu(x),tt=du?-tien(x):tien(x),ck=ckt(x);q+=du?0:x.sl;t+=tt;c+=ck;if(!x.tt)sU+=tt;
       const mgd=g.m&&g.length>1,parts=[];
       if(!x.tt){if(x.note&&!mgd)parts.push([x.note,'000000',0]);parts.push(du?['Dư','1E7A3C',0]:['Chưa tt','FF0000',0])}
       else{if(x.note&&!mgd)parts.push([x.note,'000000',0]);if(x.pay&&x.pay.trim().toLowerCase()!='đã tt')parts.push([x.pay,'000000',0]);if(x.payNote&&!mgd)parts.push([x.payNote,'000000',0]);if(!parts.length)parts.push(['Đã tt','000000',0])}
@@ -332,7 +332,7 @@ function buildXlsx(){
   const last=r-1,R=c=>`$${c}$3:$${c}$${last}`,tl=st({b:1,c:'FF0000',f:'FFF2CC'}),tn=st({b:1,c:'FF0000',f:'FFF2CC',n:3,h:'right'});r++;
   if(debt){put(sh,r,3,'TỔNG CÔNG NỢ',tl);put(sh,r,6,{f:`SUMIF(${R('C')},"<>Tổng",${R('F')})`,v:sF},tn)}
   else{put(sh,r,3,'TỔNG CỘNG',tl);put(sh,r,5,{f:`SUMIF(${R('C')},"<>Tổng",${R('E')})`,v:sE},tl);put(sh,r,6,{f:`SUMIF(${R('C')},"<>Tổng",${R('F')})`,v:sF},tn);put(sh,r,9,{f:`SUMIF(${R('C')},"<>Tổng",${R('I')})`,v:sI},tn);
-   r++;put(sh,r,3,'Chưa thanh toán',tl);put(sh,r,6,{f:`SUMIF(${R('G')},"*Chưa tt*",${R('F')})`,v:sU},tn)}
+   r++;put(sh,r,3,'Chưa thanh toán',tl);put(sh,r,6,{f:`SUMIF(${R('G')},"*Chưa tt*",${R('F')})+SUMIF(${R('G')},"*Dư",${R('F')})`,v:sU},tn)}
   return[sh,debt?[14,12,24,14,7,16,28]:[14,12,24,14,7,16,28,8,13]]};
  const sheets=Object.keys(KN).filter(k=>S.rows.some(r=>r.kenh==k)).map(k=>[KN[k],...build('THỐNG KÊ DOANH SỐ — '+KN[k].toUpperCase(),S.rows.filter(r=>r.kenh==k),0)]);
  sheets.push(['Công nợ',...build('BẢNG THEO DÕI CÔNG NỢ',S.rows.filter(r=>!r.tt),1)]);

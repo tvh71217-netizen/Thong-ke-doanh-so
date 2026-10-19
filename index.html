@@ -301,7 +301,7 @@ function buildXlsx(){
   rs.map(r=>{const o=sh.R[r],cs=Object.keys(o.c).map(Number).sort((a,b)=>a-b);return `<row r="${r}"${o.h?` ht="${o.h}" customHeight="1"`:''}>`+cs.map(c=>cx(r,c,o.c[c])).join('')+'</row>'}).join('')+'</sheetData>'+
   (sh.M.length?`<mergeCells count="${sh.M.length}">`+sh.M.map(m=>`<mergeCell ref="${m}"/>`).join('')+'</mergeCells>':'')+'</worksheet>'};
  const build=(title,data,debt)=>{
-  const sh=mk(),NC=debt?7:9,mx={},bump=(c,n)=>{mx[c]=Math.max(mx[c]||0,n)},nr=[];
+  const sh=mk(),NC=debt?7:9,mx={},bump=(c,n)=>{mx[c]=Math.max(mx[c]||0,n)},nr=[],nm=[];
   mg(sh,1,1,1,NC,title,st({b:1,sz:14,bd:0}));rw(sh,1).h=24;
   let r=2,sE=0,sF=0,sI=0,sU=0;
   if(!data.length){mg(sh,2,1,2,NC,'Không có dữ liệu',st());return[sh,debt?[14,12,24,14,7,16,28]:[14,12,24,14,7,16,28,8,13]]}
@@ -312,22 +312,23 @@ function buildXlsx(){
     mg(sh,r,2,r,NC,d,st({b:1,f:bg}));r++;
     ['Ngày giao','Tên Hàng Hoá','Giá','SL','Thành Tiền','Ghi chú'].concat(debt?[]:['CK %','Tiền CK']).forEach((h,i)=>{put(sh,r,i+2,h,st({b:1,f:'8DC63F'}));bump(i+2,i?h.length:4)});rw(sh,r).h=30;r++;
     const G=grp(d,L);
-    G.forEach(g=>{const f0=r;let q=0,t=0,c=0;
+    G.forEach(g=>{const f0=r;let q=0,t=0,c=0;const allP=g.m&&g.length>1&&g.every(x=>x.tt),blk=[];
      g.forEach(x=>{const du=isDu(x),tt=du?-tien(x):tien(x),ck=ckt(x);q+=du?0:x.sl;t+=tt;c+=ck;if(!x.tt)sU+=tt;
       const mgd=g.m&&g.length>1,parts=[];
       if(!x.tt){if(x.note&&!mgd)parts.push([x.note,'000000',0]);parts.push(du?['Dư','1E7A3C',0]:['Chưa tt','FF0000',0])}
       else{const p0=(x.pay||'').trim(),dm=p0.match(/\s*(\d{1,2}\/\d{1,2}\/\d{2,4})$/),mt=(dm?p0.slice(0,dm.index):p0).trim();if(mt)parts.push([mt,'000000',0]);if(x.note&&!mgd)parts.push([x.note,'000000',0]);if(x.payNote&&!mgd)parts.push([x.payNote,'000000',0]);if(dm)parts.push([dm[1],'000000',0]);if(!parts.length)parts.push(['Đã tt','000000',0])}
-      const nl=parts.flatMap(p=>p[0].split('\n'));nr.push([r,nl]);nl.forEach(t=>bump(7,t.length));bump(2,D(x.ngay).length);bump(3,String(x.ma).length);bump(4,F(x.gia).length);bump(5,String(x.sl).length);bump(6,F(tt).length);if(!debt&&x.ck){bump(8,(String(+x.ck)+'%').length);bump(9,F(ck).length)}
+      const nl=parts.flatMap(p=>p[0].split('\n'));if(!allP)nr.push([r,nl]);blk.push(parts.map(p=>p[0]).join('\n'));nl.forEach(t=>bump(7,t.length));bump(2,D(x.ngay).length);bump(3,String(x.ma).length);bump(4,F(x.gia).length);bump(5,String(x.sl).length);bump(6,F(tt).length);if(!debt&&x.ck){bump(8,(String(+x.ck)+'%').length);bump(9,F(ck).length)}
       put(sh,r,2,ser(x.ngay),st({n:165}));put(sh,r,3,x.ma,st());put(sh,r,4,x.gia,st({n:3}));put(sh,r,5,x.sl,st());
       put(sh,r,6,{f:(du?`-D${r}*E${r}`:`D${r}*E${r}`),v:tt},st({n:3,h:'right'}));
       if(parts.every(p=>p[1]==parts[0][1]))put(sh,r,7,parts.map(p=>p[0]).join('\n'),st({c:parts[0][1]}));else put(sh,r,7,{rich:parts.flatMap((p,i)=>i?[['\n','000000',0],p]:[p])},st({c:parts[parts.length-1][1]}));
       if(!debt){const dc=Math.min(2,((String(+x.ck).split('.')[1])||'').length);put(sh,r,8,x.ck?+(x.ck/100).toFixed(6):null,st({n:166+dc,h:'center'}));put(sh,r,9,x.ck?{f:`ROUND(F${r}*H${r},0)`,v:ck}:null,st({n:3,h:'right'}))}
       r++});
-     {const ds=[...new Set(g.map(x=>x.ngay))];if(g.m&&g.length>1&&ds.length>1){mg(sh,f0,2,r-1,2,ds.map(D).join('\n'),st())}else{let i=0;while(i<g.length){let j=i;while(j+1<g.length&&g[j+1].ngay==g[i].ngay)j++;if(j>i)mg(sh,f0+i,2,f0+j,2,ser(g[i].ngay),st({n:165}));i=j+1}}}
+     {const ds=[...new Set(g.map(x=>x.ngay))];if(g.m&&g.length>1){mg(sh,f0,2,r,2,ds.length>1?ds.map(D).join('\n'):ser(g[0].ngay),ds.length>1?st():st({n:165}))}else{let i=0;while(i<g.length){let j=i;while(j+1<g.length&&g[j+1].ngay==g[i].ngay)j++;if(j>i)mg(sh,f0+i,2,f0+j,2,ser(g[i].ngay),st({n:165}));i=j+1}}}
      if(g.m&&g.length>1){
       const rs=st({b:1,c:'FF0000',n:3,h:'right'}),rc=st({b:1,c:'FF0000'});
       put(sh,r,2,null,rc);mg(sh,r,3,r,4,'Tổng',rc);put(sh,r,5,{f:`SUM(E${f0}:E${r-1})`,v:q},rc);put(sh,r,6,{f:`SUM(F${f0}:F${r-1})`,v:t},rs);const gn=(S.groups[g.gi]&&S.groups[g.gi].payNote)||gnote(g);put(sh,r,7,gn||null,st({b:1}));if(gn){const gl=String(gn).split('\n');nr.push([r,gl]);gl.forEach(t=>bump(7,t.length))}bump(3,4);bump(5,String(q).length);bump(6,F(t).length);
       if(!debt){put(sh,r,8,null,rc);put(sh,r,9,null,rc)}
+      if(allP){const bl=[...new Set(blk)].join('\n');mg(sh,f0,7,gn?r-1:r,7,bl,st());nm.push([f0,gn?r-f0:r-f0+1,bl.split('\n')]);bl.split('\n').forEach(t=>bump(7,t.length))}
       r++}
      sE+=q;sF+=t;sI+=c});});
    mg(sh,a0,1,r-1,1,k,st({b:1,f:bg}))});
@@ -337,6 +338,7 @@ function buildXlsx(){
    r++;put(sh,r,3,'Chưa thanh toán',tl);put(sh,r,6,{f:`SUMIF(${R('G')},"*Chưa tt*",${R('F')})+SUMIF(${R('G')},"*Dư",${R('F')})`,v:sU},tn)}
   bump(3,debt?12:15);bump(5,String(sE).length);bump(6,Math.max(F(sF).length,F(sU).length)+1);bump(9,F(sI).length+1);
   const wd=c=>Math.round(((mx[c]||3)*1.05+2)*10)/10,w7=wd(6),cap=Math.max(8,Math.floor(w7*1.3)),wl=t=>{let n=1,c=0;String(t).split(' ').forEach(w=>{if(c&&c+1+w.length>cap){n++;c=w.length}else c+=(c?1:0)+w.length;if(w.length>cap)n+=Math.floor((w.length-1)/cap)});return n},cnt=a=>a.reduce((n,t)=>n+wl(t),0);
+  nm.forEach(([f,n,a])=>{const need=cnt(a);if(need>n){const h=14*Math.ceil(need/n)+2;for(let k=0;k<n;k++)rw(sh,f+k).h=h}});
   nr.forEach(([rr,a])=>{const n=cnt(a);if(n>1)rw(sh,rr).h=14*n+2});
   return[sh,[14,wd(2),wd(3),wd(4),wd(5),wd(6),w7].concat(debt?[]:[wd(8),wd(9)])]};
  const sheets=Object.keys(KN).filter(k=>S.rows.some(r=>r.kenh==k)).map(k=>[KN[k],...build('THỐNG KÊ DOANH SỐ — '+KN[k].toUpperCase(),S.rows.filter(r=>r.kenh==k),0)]);

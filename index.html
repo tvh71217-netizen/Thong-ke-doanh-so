@@ -326,9 +326,9 @@ function buildXlsx(){
      {const ds=[...new Set(g.map(x=>x.ngay))];if(g.m&&g.length>1){mg(sh,f0,2,r,2,ds.length>1?ds.map(D).join('\n'):ser(g[0].ngay),ds.length>1?st():st({n:165}))}else{let i=0;while(i<g.length){let j=i;while(j+1<g.length&&g[j+1].ngay==g[i].ngay)j++;if(j>i)mg(sh,f0+i,2,f0+j,2,ser(g[i].ngay),st({n:165}));i=j+1}}}
      if(g.m&&g.length>1){
       const rs=st({b:1,c:'FF0000',n:3,h:'right'}),rc=st({b:1,c:'FF0000'});
-      put(sh,r,2,null,rc);mg(sh,r,3,r,4,'Tổng',rc);put(sh,r,5,{f:`SUM(E${f0}:E${r-1})`,v:q},rc);put(sh,r,6,{f:`SUM(F${f0}:F${r-1})`,v:t},rs);const gn=(S.groups[g.gi]&&S.groups[g.gi].payNote)||gnote(g);put(sh,r,7,gn||null,st({b:1}));if(gn){const gl=String(gn).split('\n');nr.push([r,gl]);gl.forEach(t=>bump(7,t.length))}bump(3,4);bump(5,String(q).length);bump(6,F(t).length);
+      put(sh,r,2,null,rc);mg(sh,r,3,r,4,'Tổng',rc);put(sh,r,5,{f:`SUM(E${f0}:E${r-1})`,v:q},rc);put(sh,r,6,{f:`SUM(F${f0}:F${r-1})`,v:t},rs);const gn=(S.groups[g.gi]&&S.groups[g.gi].payNote)||gnote(g);put(sh,r,7,gn||null,st());if(gn&&!allP){const gl=String(gn).split('\n');nr.push([r,gl]);gl.forEach(t=>bump(7,t.length))}bump(3,4);bump(5,String(q).length);bump(6,F(t).length);
       if(!debt){put(sh,r,8,null,rc);put(sh,r,9,null,rc)}
-      if(allP){const bl=[...new Set(blk)].join('\n');mg(sh,f0,7,gn?r-1:r,7,bl,st());nm.push([f0,gn?r-f0:r-f0+1,bl.split('\n')]);bl.split('\n').forEach(t=>bump(7,t.length))}
+      if(allP){const bl=[...new Set(blk)].join('\n')+(gn?'\n'+gn:'');mg(sh,f0,7,r,7,bl,st());nm.push([f0,r-f0+1,bl.split('\n')]);bl.split('\n').forEach(t=>bump(7,t.length))}
       r++}
      sE+=q;sF+=t;sI+=c});});
    mg(sh,a0,1,r-1,1,k,st({b:1,f:bg}))});

@@ -336,9 +336,9 @@ function buildXlsx(){
   else{put(sh,r,3,'TỔNG CỘNG',tl);put(sh,r,5,{f:`SUMIF(${R('C')},"<>Tổng",${R('E')})`,v:sE},tl);put(sh,r,6,{f:`SUMIF(${R('C')},"<>Tổng",${R('F')})`,v:sF},tn);put(sh,r,9,{f:`SUMIF(${R('C')},"<>Tổng",${R('I')})`,v:sI},tn);
    r++;put(sh,r,3,'Chưa thanh toán',tl);put(sh,r,6,{f:`SUMIF(${R('G')},"*Chưa tt*",${R('F')})+SUMIF(${R('G')},"*Dư",${R('F')})`,v:sU},tn)}
   bump(3,debt?12:15);bump(5,String(sE).length);bump(6,Math.max(F(sF).length,F(sU).length)+1);bump(9,F(sI).length+1);
-  const wd=c=>Math.round(((mx[c]||3)*1.05+2)*10)/10,nw=Math.min(40,mx[7]||7),cnt=a=>a.reduce((n,t)=>n+Math.max(1,Math.ceil(t.length/(nw*1.1))),0);
+  const wd=c=>Math.round(((mx[c]||3)*1.05+2)*10)/10,w7=wd(6),cap=Math.max(6,Math.floor((w7-2)/1.15)),wl=t=>{let n=1,c=0;String(t).split(' ').forEach(w=>{if(c&&c+1+w.length>cap){n++;c=w.length}else c+=(c?1:0)+w.length;if(w.length>cap)n+=Math.floor((w.length-1)/cap)});return n},cnt=a=>a.reduce((n,t)=>n+wl(t),0);
   nr.forEach(([rr,a])=>{const n=cnt(a);if(n>1)rw(sh,rr).h=15*n});
-  return[sh,[14,wd(2),wd(3),wd(4),wd(5),wd(6),Math.round((nw*1.05+2)*10)/10].concat(debt?[]:[wd(8),wd(9)])]};
+  return[sh,[14,wd(2),wd(3),wd(4),wd(5),wd(6),w7].concat(debt?[]:[wd(8),wd(9)])]};
  const sheets=Object.keys(KN).filter(k=>S.rows.some(r=>r.kenh==k)).map(k=>[KN[k],...build('THỐNG KÊ DOANH SỐ — '+KN[k].toUpperCase(),S.rows.filter(r=>r.kenh==k),0)]);
  sheets.push(['Công nợ',...build('BẢNG THEO DÕI CÔNG NỢ',S.rows.filter(r=>!r.tt),1)]);
  const n=sheets.length,en=new TextEncoder();

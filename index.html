@@ -320,7 +320,7 @@ function buildXlsx(){
       const ln=parts.reduce((a,p)=>a+Math.max(1,Math.ceil(p[0].length/24)),0);
       put(sh,r,2,ser(x.ngay),st({n:165}));put(sh,r,3,x.ma,st());put(sh,r,4,x.gia,st({n:3}));put(sh,r,5,x.sl,st());
       put(sh,r,6,{f:(du?`-D${r}*E${r}`:`D${r}*E${r}`),v:tt},st({n:3,h:'right'}));
-      if(parts.every(p=>p[1]==parts[0][1]))put(sh,r,7,parts.map(p=>p[0]).join('\n'),st({c:parts[0][1]}));else put(sh,r,7,{rich:parts.flatMap((p,i)=>i?[['\n','000000',0],p]:[p])},st());
+      if(parts.every(p=>p[1]==parts[0][1]))put(sh,r,7,parts.map(p=>p[0]).join('\n'),st({c:parts[0][1]}));else put(sh,r,7,{rich:parts.flatMap((p,i)=>i?[['\n','000000',0],p]:[p])},st({c:parts[parts.length-1][1]}));
       if(!debt){const dc=Math.min(2,((String(+x.ck).split('.')[1])||'').length);put(sh,r,8,x.ck?+(x.ck/100).toFixed(6):null,st({n:166+dc,h:'center'}));put(sh,r,9,x.ck?{f:`ROUND(F${r}*H${r},0)`,v:ck}:null,st({n:3,h:'right'}))}
       if(ln>1)rw(sh,r).h=15*ln;r++});
      {let i=0;while(i<g.length){let j=i;while(j+1<g.length&&g[j+1].ngay==g[i].ngay)j++;if(j>i)mg(sh,f0+i,2,f0+j,2,ser(g[i].ngay),st({n:165}));i=j+1}}

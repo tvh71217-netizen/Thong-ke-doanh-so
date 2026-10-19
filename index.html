@@ -137,8 +137,10 @@ function pSel(){const c=[...document.querySelectorAll('#pl .pc:checked')],L=S.ro
 function pGo(){const ks=[...document.querySelectorAll('#pl .pc:checked')].map(x=>pU[x.value]);if(!ks.length){$('ps').textContent='Chọn ít nhất 1 đơn vị';return}
  const blob=pdfBuild(ks),nm=[...new Set(ks.map(u=>u.split('|')[2]))],fn=('Công Nợ '+(nm.length<=2?nm.join(' - '):nm[0]+' và '+(nm.length-1)+' đơn vị khác')).replace(/[\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim()+'.pdf';pClose();
  const file=new File([blob],fn,{type:'application/pdf'});
+ const u=URL.createObjectURL(blob);let w=null;try{w=window.open(u,'_blank')}catch(e){}
+ if(w){setTimeout(()=>URL.revokeObjectURL(u),120000);return}
  if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:fn}).catch(()=>{})}
- else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}}
+ else{const a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},4000)}}
 function pdfBuild(keys){
  const W=595,H=842,M=36,Z=2.5,FT='-apple-system,"Helvetica Neue",Arial,sans-serif',cw=W-2*M,cols=[56,128,76,30,86];cols.push(cw-cols.reduce((a,b)=>a+b,0));
  const X=[M];cols.forEach((w,i)=>X.push(X[i]+w));

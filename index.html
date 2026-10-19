@@ -323,7 +323,7 @@ function buildXlsx(){
       if(parts.every(p=>p[1]==parts[0][1]))put(sh,r,7,parts.map(p=>p[0]).join('\n'),st({c:parts[0][1]}));else put(sh,r,7,{rich:parts.flatMap((p,i)=>i?[['\n','000000',0],p]:[p])},st({c:parts[parts.length-1][1]}));
       if(!debt){const dc=Math.min(2,((String(+x.ck).split('.')[1])||'').length);put(sh,r,8,x.ck?+(x.ck/100).toFixed(6):null,st({n:166+dc,h:'center'}));put(sh,r,9,x.ck?{f:`ROUND(F${r}*H${r},0)`,v:ck}:null,st({n:3,h:'right'}))}
       r++});
-     {let i=0;while(i<g.length){let j=i;while(j+1<g.length&&g[j+1].ngay==g[i].ngay)j++;if(j>i)mg(sh,f0+i,2,f0+j,2,ser(g[i].ngay),st({n:165}));i=j+1}}
+     {const ds=[...new Set(g.map(x=>x.ngay))];if(g.m&&g.length>1&&ds.length>1){mg(sh,f0,2,r-1,2,ds.map(D).join('\n'),st())}else{let i=0;while(i<g.length){let j=i;while(j+1<g.length&&g[j+1].ngay==g[i].ngay)j++;if(j>i)mg(sh,f0+i,2,f0+j,2,ser(g[i].ngay),st({n:165}));i=j+1}}}
      if(g.m&&g.length>1){
       const rs=st({b:1,c:'FF0000',n:3,h:'right'}),rc=st({b:1,c:'FF0000'});
       put(sh,r,2,null,rc);mg(sh,r,3,r,4,'Tổng',rc);put(sh,r,5,{f:`SUM(E${f0}:E${r-1})`,v:q},rc);put(sh,r,6,{f:`SUM(F${f0}:F${r-1})`,v:t},rs);const gn=(S.groups[g.gi]&&S.groups[g.gi].payNote)||gnote(g);put(sh,r,7,gn||null,st({b:1}));if(gn){const gl=String(gn).split('\n');nr.push([r,gl]);gl.forEach(t=>bump(7,t.length))}bump(3,4);bump(5,String(q).length);bump(6,F(t).length);

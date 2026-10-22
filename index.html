@@ -359,7 +359,7 @@ function buildXlsx(){
    mg(sh,a0,1,r-1,1,k,st({b:1,f:bg}))});
   const last=r-1,R=c=>`$${c}$3:$${c}$${last}`,tl=st({b:1,c:'FF0000',f:'FFF2CC'}),tn=st({b:1,c:'FF0000',f:'FFF2CC',n:3,h:'right'});r++;
   if(debt){put(sh,r,3,'TỔNG CÔNG NỢ',tl);put(sh,r,6,{f:`SUMIF(${R('C')},"<>Tổng",${R('F')})`,v:sF},tn)}
-  else{put(sh,r,3,'TỔNG CỘNG',tl);put(sh,r,5,{f:`SUMIF(${R('C')},"<>Tổng",${R('E')})`,v:sE},tl);put(sh,r,6,{f:`SUMIF(${R('C')},"<>Tổng",${R('F')})`,v:sF},tn);put(sh,r,9,{f:`SUMIF(${R('C')},"<>Tổng",${R('I')})`,v:sI},tn);
+  else{put(sh,r,3,'TỔNG CỘNG',tl);put(sh,r,5,{f:`SUMIF(${R('C')},"<>Tổng",${R('E')})`,v:sE},tl);put(sh,r,6,{f:`SUMIF(${R('C')},"<>Tổng",${R('F')})`,v:sF},tn);put(sh,r,8,'Tổng CK',tl);bump(8,8);put(sh,r,9,{f:`SUMIF(${R('C')},"<>Tổng",${R('I')})`,v:sI},tn);
    r++;put(sh,r,3,'Chưa thanh toán',tl);put(sh,r,6,{f:`SUMIF(${R('G')},"*Chưa tt*",${R('F')})+SUMIF(${R('G')},"*Dư",${R('F')})`,v:sU},tn)}
   bump(3,debt?12:15);bump(5,String(sE).length);bump(6,Math.max(F(sF).length,F(sU).length)+1);bump(9,F(sI).length+1);
   const wd=c=>Math.round(((mx[c]||3)*1.05+2)*10)/10,w7=wd(6),cap=Math.max(8,Math.floor(w7*1.3)),wl=t=>{let n=1,c=0;String(t).split(' ').forEach(w=>{if(c&&c+1+w.length>cap){n++;c=w.length}else c+=(c?1:0)+w.length;if(w.length>cap)n+=Math.floor((w.length-1)/cap)});return n},cnt=a=>a.reduce((n,t)=>n+wl(t),0);

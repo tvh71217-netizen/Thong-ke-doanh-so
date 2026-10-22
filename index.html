@@ -335,7 +335,7 @@ function buildXlsx(){
    [...new Set(data.filter(d=>d.kv==k).map(d=>d.dv))].forEach(d=>{
     const L=data.filter(x=>x.kv==k&&x.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
     mg(sh,r,2,r,NC,d,st({b:1,f:bg}));r++;
-    ['Ngày giao','Tên Hàng Hoá','Giá','SL','Thành Tiền','Ghi chú'].concat(debt?[]:['CK %','Tiền CK']).forEach((h,i)=>{put(sh,r,i+2,h,st({b:1,f:'8DC63F'}));bump(i+2,i?h.length:4)});rw(sh,r).h=30;r++;
+    ['Ngày giao','Tên Hàng Hoá','Giá','SL','Thành Tiền','Ghi chú'].concat(debt?[]:['CK %','Tiền CK']).forEach((h,i)=>{put(sh,r,i+2,h,st({b:1,f:'8DC63F'}));bump(i+2,i?h.length:4)});rw(sh,r).h=18;r++;
     const G=grp(d,L);
     G.forEach(g=>{const f0=r;let q=0,t=0,c=0;const allP=g.m&&g.length>1&&g.every(x=>x.tt),blk=[];
      g.forEach(x=>{const du=isDu(x),tt=du?-tien(x):tien(x),ck=ckt(x);q+=du?0:x.sl;t+=tt;c+=ck;if(!x.tt)sU+=tt;

@@ -49,9 +49,9 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 <div><label>Mã hàng</label><input id="ma" list="mal" placeholder="DK 55B24L" autocapitalize="characters" style="text-transform:uppercase" oninput="const a=this.selectionStart,b=this.selectionEnd;this.value=this.value.toUpperCase();this.setSelectionRange(a,b);plFill(1)" onchange="plFill(1)"></div></div>
 <div class="g2"><div><label>Giá</label><input id="gia" type="text" inputmode="numeric" placeholder="1600 = 1.600.000" oninput="calc()"><small id="gh" class="ok"></small><small id="ph" class="ok" style="display:block"></small></div>
 <div><label>Số lượng</label><input id="sl" type="number" inputmode="numeric" value="1" oninput="calc()"></div></div>
-<div class="g2"><div><label>Thanh toán</label><select id="tt" onchange="bSync('t')"><option value="0">Chưa thanh toán</option><option value="1">Đã thanh toán</option></select></div>
+<div class="g2"><div><label>Thanh toán</label><select id="tt" onchange="noteMode();bSync('t')"><option value="0">Chưa thanh toán</option><option value="1">Đã thanh toán</option></select></div>
 <div><label>Mức ck</label><select id="ck" onchange="ckPick()"><option value="0">Không ck</option><option>0.5</option><option>1</option><option>2</option><option>3</option><option>5</option><option value="x">Khác (nhập tay)…</option></select></div></div>
-<label>Ghi chú</label><input id="note" placeholder="ship 45K, đã ck ngày..." oninput="bSync('n')"><small id="bh" class="ok"></small>
+<label id="nl" style="color:var(--red);font-weight:700">Chưa tt</label><input id="note" placeholder="Ghi chú bổ sung (VD: Nợ bình cũ)" style="color:var(--red)" oninput="this.style.borderColor='';bSync('n')"><small id="bh" class="ok"></small>
 <div class="tot"><span>Thành tiền</span><span id="tt_v">0</span></div>
 <div class="tot" style="padding-top:0"><span>Tiền ck</span><span id="ck_v">0</span></div>
 <button class="btn" id="save" onclick="save()">Thêm</button>
@@ -99,9 +99,12 @@ function persist(){try{localStorage.setItem('tkds',JSON.stringify(S))}catch(e){}
 const D=s=>{if(!s)return'';const[a,b,c]=s.split('-');return+c+'/'+ +b+'/'+a.slice(2)};
 const KN={gara:'Gara',daily:'Đại lý',lop:'Lốp xe'};
 function tab(n){[1,2,3,4].forEach(i=>{$('p'+i).classList.toggle('hide',n!=i);$('t'+i).classList.toggle('on',n==i)});if(n==2)sum();if(n==3)cn();if(n==4)plRender()}
-let bb=null,pid=null,pids=null;
+let bb=null,pid=null,pids=null,PV={},NK='';
+const noteVal=()=>$('note').value.trim();
+function noteMode(){const e=$('note'),p=+$('tt').value;if(e.dataset.m)PV[e.dataset.m]=e.value;e.dataset.m=p?'1':'0';e.style.borderColor='';e.value=PV[p?'1':'0']||'';if(p){e.placeholder='Bắt buộc: VD đã tt ck, đã tt tm, đã ck cty…';e.style.color='';$('nl').style.color='';$('nl').style.fontWeight='';$('nl').innerHTML='Phương thức thanh toán <span style="color:var(--red)">*</span>'}else{e.placeholder='Ghi chú bổ sung (VD: Nợ bình cũ)';e.style.color='var(--red)';$('nl').style.color='var(--red)';$('nl').style.fontWeight='700';$('nl').textContent='Chưa tt'}}
+function needPay(){if(+$('tt').value&&!$('note').value.trim()){const e=$('note');e.style.borderColor='var(--red)';e.focus();$('gh').textContent='Bắt buộc nhập phương thức thanh toán';$('gh').className='no';return true}return false}
 function tg(id){const r=S.rows.find(x=>x.id==id);if(r.tt){unpay([id]);persist();render();cn();return}pid=id;$('mi').textContent=r.dv+' · '+r.ma+' · '+F(cnT(r))+'đ';pReset();$('mo').classList.remove('hide')}
-function sn(r,gm){if(!r.tt)return(!gm&&r.note?r.note+'<br>':'')+(isDu(r)?'<span class="ok"><b>Dư</b></span>':'<span class="no">Chưa tt</span>');const a=[];if(!gm&&r.note)a.push(r.note);if(r.pay&&r.pay.trim().toLowerCase()!='đã tt')a.push(r.pay);if(!gm&&r.payNote)a.push(eA(r.payNote));return a.length?a.join('<br>'):'Đã tt'}
+function sn(r,gm){if(!r.tt){const du=isDu(r);return(du?'<span class="ok"><b>Dư</b></span>':'<span class="no">Chưa tt</span>')+(!gm&&r.note?'<br>'+(du?r.note:'<span class="no">'+r.note+'</span>'):'')}const a=[];if(!gm&&r.note)a.push(r.note);if(r.pay&&r.pay.trim().toLowerCase()!='đã tt')a.push(r.pay);if(!gm&&r.payNote)a.push(eA(r.payNote));return a.length?a.join('<br>'):'Đã tt'}
 function unpay(ids){ids.forEach(i=>{const r=S.rows.find(x=>x.id==i);if(r){r.tt=0;r.pay='';r.payNote=''}S.groups.forEach(g=>{if(g.ids.includes(+i))delete g.payNote})})}
 let pm='';
 function pReset(){pm='';$('pn').value='';$('pn').style.borderColor=''}
@@ -118,7 +121,7 @@ persist();cp();render();cn()}
 const eA=t=>String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 function gnote(g){const G=S.groups[g.gi];if(G&&G.note!=null)return G.note;const N=[...new Set(g.map(r=>(r.note||'').trim()).filter(Boolean))];return N.length==1&&g.every(r=>(r.note||'').trim()==N[0])?N[0]:g.filter(r=>r.note).map(r=>r.ma+': '+r.note).join('; ')}
 function gNote(i,v){if(S.groups[i]){S.groups[i].note=v.trim();persist()}}
-function cnRow(r,nt){return `<div class="row"><input type="checkbox" class="cc" value="${r.id}" style="width:20px;flex:none;align-self:center"><div style="flex:1">${D(r.ngay)} · ${r.ma}<br><small>${F(r.gia)} × ${r.sl}${nt&&r.note?' · '+r.note:''}</small></div><div style="text-align:right"><b${isDu(r)?' class="ok"':''}>${F(cnT(r))}</b><br>${isDu(r)?`<button class="ok" style="color:var(--pri);border-color:var(--pri);font-weight:700" onclick="tg(${r.id})">Dư</button>`:`<button class="no" style="color:var(--red);border-color:var(--red);font-weight:700" onclick="tg(${r.id})">Chưa tt</button>`}</div></div>`}
+function cnRow(r,nt){return `<div class="row"><input type="checkbox" class="cc" value="${r.id}" style="width:20px;flex:none;align-self:center"><div style="flex:1">${D(r.ngay)} · ${r.ma}<br><small>${F(r.gia)} × ${r.sl}${nt&&r.note?' · '+(isDu(r)?r.note:'<span class="no">'+r.note+'</span>'):''}</small></div><div style="text-align:right"><b${isDu(r)?' class="ok"':''}>${F(cnT(r))}</b><br>${isDu(r)?`<button class="ok" style="color:var(--pri);border-color:var(--pri);font-weight:700" onclick="tg(${r.id})">Dư</button>`:`<button class="no" style="color:var(--red);border-color:var(--red);font-weight:700" onclick="tg(${r.id})">Chưa tt</button>`}</div></div>`}
 function cnRows(d,A){return grp(d,A).map(g=>{if(!g.m||g.length<2)return g.map(r=>cnRow(r,1)).join('');const N=[...new Set(g.map(r=>(r.note||'').trim()).filter(Boolean))],nt=gnote(g);return `<div class="gb" style="margin:6px 0;border:1.5px solid var(--bd);border-radius:10px;padding:0 8px;background:rgba(0,0,0,.025)">`+g.map(r=>cnRow(r,0)).join('')+`<div style="border-top:1px solid var(--bd);padding:6px 0"><input placeholder="📝 Ghi chú cho nhóm…" value="${eA(nt)}" onchange="gNote(${g.gi},this.value)" style="font-size:14px;padding:8px"></div>`+`<div class="tot" style="border-top:1px solid var(--bd)"><span>Tổng ${g.length} mã</span><span class="${g.reduce((a,r)=>a+cnT(r),0)<0?'ok':'no'}">${F(g.reduce((a,r)=>a+cnT(r),0))}</span></div><div style="text-align:right;padding-bottom:6px"><button onclick="gSelAll(this)" style="border:0;background:none;color:var(--c2);font-size:13px;padding:2px 4px">Chọn cả nhóm</button></div></div>`}).join('')}
 function gSelAll(b){const c=b.closest('.gb').querySelectorAll('.cc'),v=![...c].every(x=>x.checked);c.forEach(x=>x.checked=v)}
 function cn(){const L=S.rows.filter(r=>!r.tt),us=pKeys();let all=0;
@@ -204,24 +207,25 @@ function bParse(){const out=[],bad=[],num=x=>/^\d+([.,]\d+)?$/.test(x);
 function bPrev(){const{out,bad}=bParse();$('bs').className=bad.length?'no':'';$('bs').textContent=(out.length?`${out.length} mã · ${F(out.reduce((a,r)=>a+r.gia*r.sl,0))}đ`:'')+(bad.length?` · Dòng lỗi: ${bad.join(', ')}`:'')}
 function bOpen(){const d=$('dv').value.trim();if(!d||!$('ngay').value){$('gh').textContent=!d?'Nhập tên đơn vị trước':'Chọn ngày giao trước';$('gh').className='no';(!d?$('dv'):$('ngay')).focus();return}$('bt0').textContent=d+' · '+D($('ngay').value)+' · dùng chung kênh, khu vực, ngày, thanh toán, ck, ghi chú ở form';$('bt').value='';$('bs').textContent='';$('bm').classList.remove('hide');setTimeout(()=>$('bt').focus(),50)}
 function bClose(){$('bm').classList.add('hide')}
-function bAdd(){const{out,bad}=bParse();if(!out.length||bad.length){bPrev();if(!out.length)$('bs').textContent='Chưa có mã hợp lệ';return}
+function bAdd(){if(needPay()){bClose();return}const{out,bad}=bParse();if(!out.length||bad.length){bPrev();if(!out.length)$('bs').textContent='Chưa có mã hợp lệ';return}
  const dv=$('dv').value.trim(),kenh=$('kenh').value,kv=$('kv').value;let nm=dv;
  const u=S.units.find(x=>x.dv.toLowerCase()==dv.toLowerCase());if(u){u.kv=kv;u.kenh=kenh;nm=u.dv;plLinkSel(u)}else S.units.push({dv,kv,kenh,pls:+$('plsel').value?[+$('plsel').value]:[]});
- const t=Date.now();out.forEach((o,i)=>S.rows.push({id:t+i,kenh,kv,dv:nm,ngay:$('ngay').value,ma:o.ma,gia:o.gia,sl:o.sl,tt:+$('tt').value,ck:o.ck!=null?o.ck:+$('ck').value,note:$('note').value.trim()}));
+ const t=Date.now();out.forEach((o,i)=>S.rows.push({id:t+i,kenh,kv,dv:nm,ngay:$('ngay').value,ma:o.ma,gia:o.gia,sl:o.sl,tt:+$('tt').value,ck:o.ck!=null?o.ck:+$('ck').value,note:noteVal()}));
  if(out.length>1)S.groups.push({dv:nm,ids:out.map((o,i)=>t+i)});
  persist();bb=out.map((o,i)=>t+i);$('ma').value='';$('gia').value='';$('sl').value=1;$('bdone').classList.remove('hide');$('bh').textContent='Đã thêm '+out.length+' mã'+(out.length>1?' (tự gộp đơn)':'')+'. Ghi chú, thanh toán sửa ở đây áp dụng cho cả '+out.length+' mã; đổi Mức ck sẽ ghi đè ck của cả lô.';render();dvList();bClose();calc()}
 function ckSet(v){v=+v||0;const e=$('ck');if(![...e.options].some(o=>o.value!='x'&&+o.value==v)){const o=document.createElement('option');o.textContent=v;e.insertBefore(o,e.querySelector('option[value="x"]'))}e.value=[...e.options].find(o=>o.value!='x'&&+o.value==v).value;calc()}
 function ckPick(){const e=$('ck');if(e.value=='x'){const v=parseFloat(String(prompt('Nhập mức ck (%), VD: 1.5')||'').replace(',','.'));if(v>=0&&v<=100)ckSet(v);else e.value='0'}calc();bSync('c')}
-function bSync(w){if(!bb)return;S.rows.forEach(r=>{if(bb.includes(r.id)){if(w=='n')r.note=$('note').value.trim();if(w=='c')r.ck=+$('ck').value;if(w=='t'){r.tt=+$('tt').value;if(!r.tt){r.pay='';r.payNote=''}}}});S.groups.forEach(g=>{if(g.payNote&&g.ids.some(i=>{const r=S.rows.find(x=>x.id==i);return r&&!r.tt}))delete g.payNote});persist();render();calc()}
-function reset(){edit=null;$('ngay').value='';bb=null;$('bdone').classList.add('hide');$('bh').textContent='';['dv','ma','gia','note'].forEach(i=>$(i).value='');$('sl').value=1;$('ck').value=0;$('tt').value=0;$('save').textContent='Thêm';$('cancel').classList.add('hide');$('plsel').value='';plOpts();$('ph').textContent='';calc()}
+function bSync(w){if(!bb)return;if(needPay())return;S.rows.forEach(r=>{if(bb.includes(r.id)){r.note=noteVal();if(w=='c')r.ck=+$('ck').value;r.tt=+$('tt').value;if(!r.tt){r.pay='';r.payNote=''}}});S.groups.forEach(g=>{if(g.payNote&&g.ids.some(i=>{const r=S.rows.find(x=>x.id==i);return r&&!r.tt}))delete g.payNote});persist();render();calc()}
+function reset(){edit=null;$('ngay').value='';bb=null;$('bdone').classList.add('hide');$('bh').textContent='';['dv','ma','gia'].forEach(i=>$(i).value='');PV={};$('note').dataset.m='';$('note').value='';$('sl').value=1;$('ck').value=0;$('tt').value=0;noteMode();$('save').textContent='Thêm';$('cancel').classList.add('hide');$('plsel').value='';plOpts();$('ph').textContent='';calc()}
 function save(){
- const r={id:edit||Date.now(),kenh:$('kenh').value,kv:$('kv').value,dv:$('dv').value.trim(),ngay:$('ngay').value,ma:$('ma').value.trim().toUpperCase(),gia:P($('gia').value),sl:+$('sl').value||1,tt:+$('tt').value,ck:+$('ck').value,note:$('note').value.trim()};
+ const r={id:edit||Date.now(),kenh:$('kenh').value,kv:$('kv').value,dv:$('dv').value.trim(),ngay:$('ngay').value,ma:$('ma').value.trim().toUpperCase(),gia:P($('gia').value),sl:+$('sl').value||1,tt:+$('tt').value,ck:+$('ck').value,note:noteVal()};
+ if(needPay())return;
  if(!r.dv||!r.ma||!r.gia||!r.ngay){$('gh').textContent=!r.ngay?'Chọn ngày giao':'Nhập tên đơn vị, mã hàng và giá';$('gh').className='no';return}$('gh').className='ok';
  const u=S.units.find(x=>x.dv.toLowerCase()==r.dv.toLowerCase());if(u){u.kv=r.kv;u.kenh=r.kenh;r.dv=u.dv;plLinkSel(u)}else S.units.push({dv:r.dv,kv:r.kv,kenh:r.kenh,pls:+$('plsel').value?[+$('plsel').value]:[]});
  if(edit){S.rows=S.rows.map(x=>x.id==edit?r:x)}else S.rows.push(r);
  persist();reset();render();dvList()}
 function ed(id){const r=S.rows.find(x=>x.id==id);edit=id;
- $('kenh').value=r.kenh;$('kv').value=r.kv;$('dv').value=r.dv;$('ngay').value=r.ngay;$('ma').value=r.ma;$('gia').value=r.gia;$('sl').value=r.sl;$('tt').value=r.tt;ckSet(r.ck);$('note').value=r.note;
+ $('kenh').value=r.kenh;$('kv').value=r.kv;$('dv').value=r.dv;$('ngay').value=r.ngay;$('ma').value=r.ma;$('gia').value=r.gia;$('sl').value=r.sl;$('tt').value=r.tt;PV={};PV[r.tt?'1':'0']=r.note||'';$('note').dataset.m='';noteMode();ckSet(r.ck);
  $('save').textContent='Lưu';$('cancel').classList.remove('hide');calc();scrollTo(0,0)}
 let dq=null;function del(id){const r=S.rows.find(x=>x.id==id);if(!r)return;dq=id;$('dmi').textContent=`${r.dv} · ${D(r.ngay)} · ${r.ma} · ${F(r.gia)} × ${r.sl} = ${F(tien(r))}`;$('dm').classList.remove('hide')}
 function delNo(){dq=null;$('dm').classList.add('hide')}
@@ -322,7 +326,7 @@ function buildXlsx(){
     G.forEach(g=>{const f0=r;let q=0,t=0,c=0;const allP=g.m&&g.length>1&&g.every(x=>x.tt),blk=[];
      g.forEach(x=>{const du=isDu(x),tt=du?-tien(x):tien(x),ck=ckt(x);q+=du?0:x.sl;t+=tt;c+=ck;if(!x.tt)sU+=tt;
       const mgd=g.m&&g.length>1,parts=[];
-      if(!x.tt){if(x.note&&!mgd)parts.push([x.note,'000000',0]);parts.push(du?['Dư','1E7A3C',0]:['Chưa tt','FF0000',0])}
+      if(!x.tt){parts.push(du?['Dư','1E7A3C',0]:['Chưa tt','FF0000',0]);if(x.note&&!mgd)parts.push([x.note,du?'000000':'FF0000',0])}
       else{const p0=(x.pay||'').trim(),dm=p0.match(/\s*(\d{1,2}\/\d{1,2}\/\d{2,4})$/),mt=(dm?p0.slice(0,dm.index):p0).trim();if(mt)parts.push([mt,'000000',0]);if(x.note&&!mgd)parts.push([x.note,'000000',0]);if(x.payNote&&!mgd)parts.push([x.payNote,'000000',0]);if(dm)parts.push([dm[1],'000000',0]);if(!parts.length)parts.push(['Đã tt','000000',0])}
       const nl=parts.flatMap(p=>p[0].split('\n'));if(!allP)nr.push([r,nl]);blk.push(parts.map(p=>p[0]).join('\n'));nl.forEach(t=>bump(7,t.length));bump(2,D(x.ngay).length);bump(3,String(x.ma).length);bump(4,F(x.gia).length);bump(5,String(x.sl).length);bump(6,F(tt).length);if(!debt&&x.ck){bump(8,(String(+x.ck)+'%').length);bump(9,F(ck).length)}
       put(sh,r,2,ser(x.ngay),st({n:165}));put(sh,r,3,x.ma,st());put(sh,r,4,x.gia,st({n:3}));put(sh,r,5,x.sl,st());

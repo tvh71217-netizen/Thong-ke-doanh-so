@@ -34,6 +34,26 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 .t td{color:var(--red);font-weight:700}
 .sum{display:flex;justify-content:space-between;padding:6px 0}
 .hide{display:none}.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9}.mo.hide{display:none}.mb{background:var(--card);border-radius:14px;padding:16px;width:100%;max-width:400px}.ch{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.ch button{padding:8px 12px;border:1px solid var(--bd);border-radius:20px;background:var(--bg);color:var(--tx);font-size:14px}.ch button.on{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+.bsg{display:none;gap:6px;overflow-x:auto;flex:0 0 auto;padding:4px 0;-webkit-overflow-scrolling:touch}.bsg.on{display:flex}.bsg button{flex:0 0 auto;padding:8px 12px;border:1px solid var(--bd);border-radius:18px;background:var(--bg);color:var(--tx);font-size:14px;white-space:nowrap}.bsg button small{color:var(--mu);margin-left:6px}.bsg button:active{background:var(--pri);color:#fff}
+.kbx{display:none}
+@media (pointer:coarse){
+#bm{padding:0}
+#bm .mb{max-width:100%;height:100vh;height:100dvh;border-radius:0;display:flex;flex-direction:column;overflow:hidden;padding:12px 12px calc(10px + env(safe-area-inset-bottom))}
+#bm textarea{height:104px;flex:0 0 auto}
+#bm #bs{flex:1 1 auto;overflow:auto;min-height:28px}
+#bm .g2{flex:0 0 auto}
+.kbx{display:block;flex:0 0 auto;background:var(--bd);border-radius:10px;padding:6px 4px;margin:4px 0;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.kbx .kr{display:flex;gap:5px;margin-bottom:6px}
+.kbx .kr:last-child{margin-bottom:0}
+.kbx .kr.pad{padding:0 5%}
+.kbx button{flex:1 1 0;min-width:0;min-height:46px;padding:0;border:0;border-radius:6px;background:var(--card);color:var(--tx);box-shadow:0 1px 0 rgba(0,0,0,.35);font-size:21px;font-family:inherit}
+.kbx button:active{opacity:.6}
+.kbx .kr.top button{min-height:42px;font-size:20px;font-weight:600}
+.kbx button.f{background:var(--mu);color:var(--bg);font-size:17px}
+.kbx button.w{flex:1.6 1 0}
+.kbx button.sp{flex:5 1 0;font-size:16px}
+.kbx button.en{flex:2 1 0;font-size:16px}
+}
 </style></head><body>
 <h1 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Thống Kê Doanh Số<button onclick="xp()" style="border:1px solid var(--pri);background:var(--card);color:var(--pri);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600">Xuất Excel</button></h1>
 <div class="tabs"><button id="t1" class="on" onclick="tab(1)">Thống kê</button><button id="t2" onclick="tab(2)">Tổng kết</button><button id="t3" onclick="tab(3)">Công nợ</button><button id="t4" onclick="tab(4)">Giá</button></div>
@@ -78,7 +98,7 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 <div id="km" class="mo hide" style="z-index:10" onclick="if(event.target===this)kmClose()"><div class="mb" style="max-height:85vh;overflow:auto"><b>Quản lý kênh</b><div id="kml" style="margin:8px 0"></div><div style="display:flex;gap:6px"><input id="kmn" placeholder="Tên kênh mới (VD: Khách lẻ)" style="flex:1"><button class="btn" style="margin-top:0;width:auto;padding:0 16px" onclick="kmAdd()">Thêm</button></div><button class="btn s" onclick="kmClose()">Đóng</button></div></div>
 <div id="dm" class="mo hide" style="z-index:10" onclick="if(event.target===this)delNo()"><div class="mb"><b>Xoá dòng này?</b><div id="dmi" style="color:var(--mu);font-size:13px;margin:6px 0 12px"></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="delNo()">No</button><button class="btn" style="margin-top:0;background:var(--red)" onclick="delYes()">Yes, xoá</button></div></div></div>
 <div id="mo" class="mo hide"><div class="mb"><b>Xác nhận đã thanh toán</b><div id="mi" style="color:var(--mu);font-size:13px;margin-top:4px"></div><label>Phương thức thanh toán <span style="color:var(--red)">*</span></label><input id="pn" placeholder="VD: Đã tt ck, đã tt tm, đã ck cty…" oninput="this.style.borderColor=''"><div class="g2"><button class="btn s" onclick="cp()">Huỷ</button><button class="btn" style="margin-top:6px" onclick="okp()">Xác nhận</button></div></div></div>
-<div id="bm" class="mo hide" onclick="if(event.target===this)bClose()"><div class="mb"><b>Thêm nhiều mã</b><div id="bt0" style="color:var(--mu);font-size:13px;margin:4px 0 4px"></div><label>Ngày giao (chọn được ngày cũ)</label><input id="bd" type="date" style="margin-bottom:8px"><textarea id="bt" rows="7" oninput="bPrev()" placeholder="Mỗi dòng 1 mã: Mã, Giá, SL, ck&#10;RK 60044, 1.917, 1, 0.5&#10;N50Z, 1800, 2&#10;RK 60044 (chỉ ghi mã → tự lấy giá từ bảng giá)&#10;(SL trống = 1, ck trống = lấy mức ck ở form)" style="width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:16px;text-transform:uppercase"></textarea><div id="bs" style="font-weight:600;padding:6px 0"></div><div class="g2"><button class="btn s" onclick="bClose()">Đóng</button><button class="btn" style="margin-top:6px" onclick="bAdd()">Thêm tất cả</button></div></div></div>
+<div id="bm" class="mo hide" onclick="if(event.target===this)bClose()"><div class="mb"><b>Thêm nhiều mã</b><div id="bt0" style="color:var(--mu);font-size:13px;margin:4px 0 4px"></div><label>Ngày giao (chọn được ngày cũ)</label><input id="bd" type="date" style="margin-bottom:8px"><textarea id="bt" rows="7" oninput="bPrev()" placeholder="Mỗi dòng 1 mã: Mã, Giá, SL, ck&#10;RK 60044, 1.917, 1, 0.5&#10;N50Z, 1800, 2&#10;RK 60044 (chỉ ghi mã → tự lấy giá từ bảng giá)&#10;(SL trống = 1, ck trống = lấy mức ck ở form)" style="width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:16px;text-transform:uppercase"></textarea><div id="bsg" class="bsg"></div><div id="bs" style="font-weight:600;padding:6px 0"></div><div class="kbx" id="bkb"></div><div class="g2"><button class="btn s" onclick="bClose()">Đóng</button><button class="btn" style="margin-top:6px" onclick="bAdd()">Thêm tất cả</button></div></div></div>
 <div id="gm" class="mo hide" onclick="if(event.target===this)gClose()"><div class="mb"><b>Gộp tổng tuỳ chọn</b><div id="gt" style="color:var(--mu);font-size:13px;margin:4px 0 8px"></div><div id="gl"></div><div id="gs" style="font-weight:600;padding:6px 0"></div><div class="g2"><button class="btn s" onclick="gClose()">Đóng</button><button class="btn" style="margin-top:6px" onclick="gAdd()">Thêm tổng</button></div></div></div>
 <div id="pm" class="mo hide" onclick="if(event.target===this)pClose()"><div class="mb"><b>Xuất công nợ PDF</b><div style="color:var(--mu);font-size:13px;margin:4px 0 8px">Tích chọn đơn vị muốn xuất</div><div id="pl" style="max-height:45vh;overflow:auto"></div><div id="ps" style="font-weight:600;padding:8px 0"></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="pAll(0)">Bỏ chọn hết</button><button class="btn s" style="margin-top:0" onclick="pAll(1)">Chọn hết</button></div><div class="g2"><button class="btn s" onclick="pClose()">Đóng</button><button class="btn" style="margin-top:6px" onclick="pGo()">Xuất PDF</button></div></div></div>
 <div id="um" class="mo hide" onclick="if(event.target===this)uClose()"><div class="mb"><b>Đơn vị đã lưu</b><div style="color:var(--mu);font-size:13px;margin:4px 0">Chạm Xoá 2 lần để xoá. Nếu đơn vị còn dữ liệu thì các dòng đó cũng bị xoá.</div><div id="ul" style="max-height:55vh;overflow:auto"></div><button class="btn s" onclick="uClose()">Đóng</button></div></div>
@@ -218,8 +238,42 @@ function bParse(){const out=[],bad=[],num=x=>/^\d+([.,]\d+)?$/.test(x);
   else{const w=ln.split(/\s+/),t=[];while(w.length>1&&num(w[w.length-1])&&t.length<2)t.unshift(w.pop());if(t.length==2){gia=P(t[0]);sl=+t[1]||1}else if(t.length==1)gia=P(t[0]);ma=w.join(' ')}
   ma=(ma||'').toUpperCase();if(ma&&!gia)gia=plPrice(ma);if(ma&&gia)out.push({ma,gia,sl,ck});else bad.push(i+1)});
  return{out,bad}}
-function bPrev(){const{out,bad}=bParse();$('bs').className=bad.length?'no':'';$('bs').textContent=(out.length?`${out.length} mã · ${F(out.reduce((a,r)=>a+r.gia*r.sl,0))}đ`:'')+(bad.length?` · Dòng lỗi: ${bad.join(', ')}`:'')}
-function bOpen(){const d=$('dv').value.trim();if(!d){$('gh').textContent='Nhập tên đơn vị trước';$('gh').className='no';$('dv').focus();return}$('bd').value=$('ngay').value||new Date().toISOString().slice(0,10);$('bt0').textContent=d+' · dùng chung kênh, khu vực, thanh toán, ck, ghi chú ở form';$('bt').value='';$('bs').textContent='';$('bm').classList.remove('hide');setTimeout(()=>$('bt').focus(),50)}
+function bPrev(){bSug();const{out,bad}=bParse();$('bs').className=bad.length?'no':'';$('bs').textContent=(out.length?`${out.length} mã · ${F(out.reduce((a,r)=>a+r.gia*r.sl,0))}đ`:'')+(bad.length?` · Dòng lỗi: ${bad.join(', ')}`:'')}
+const BKB_COARSE=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+function bkbInit(){
+  const ta=$('bt');ta.readOnly=true;ta.setAttribute('inputmode','none');
+  const kb=$('bkb');if(kb.dataset.drawn)return;kb.dataset.drawn='1';
+  const b=(k,l,c)=>`<button type="button" class="${c||''}" data-k="${k}">${l}</button>`;
+  const row=t=>t.split('').map(c=>b(c,c)).join('');
+  kb.innerHTML=`<div class="kr top">${'1234567890'.split('').map(c=>b(c,c)).join('')}${b(',',',')}${b('.','.')}</div>`+
+    `<div class="kr">${row('QWERTYUIOP')}</div><div class="kr pad">${row('ASDFGHJKL')}</div>`+
+    `<div class="kr">${row('ZXCVBNM')}${b('BS','⌫','f w')}</div>`+
+    `<div class="kr">${b('-','-','f')}${b(' ','dấu cách','sp')}${b('NL','Nhập','f en')}</div>`;
+  kb.addEventListener('pointerdown',e=>{const x=e.target.closest('button');if(!x)return;e.preventDefault();bkbKey(x.getAttribute('data-k'))});
+}
+function bkbKey(k){
+  const ta=$('bt');let s=ta.selectionStart,e=ta.selectionEnd;if(s==null||e==null){s=e=ta.value.length}
+  if(k==='BS'){if(s===e){if(s<=0)return;s=ta.value.slice(s-2,s)===', '?s-2:s-1}ta.setRangeText('',s,e,'end')}
+  else ta.setRangeText(k==='NL'?'\n':(k===','?', ':k),s,e,'end');
+  if(ta.selectionStart>=ta.value.length-1)ta.scrollTop=ta.scrollHeight;
+  bPrev();
+}
+let BSG=[];
+function bSug(){const box=$('bsg');if(!box)return;const ta=$('bt');let pos=ta.selectionStart;if(pos==null)pos=ta.value.length;
+  const ls=ta.value.lastIndexOf('\n',pos-1)+1,tok=ta.value.slice(ls,pos);
+  if(/[,;\t]/.test(tok)){BSG=[];box.className='bsg';box.innerHTML='';return}
+  const nz=x=>String(x).toUpperCase().replace(/\s+/g,''),q=nz(tok);
+  if(!q){BSG=[];box.className='bsg';box.innerHTML='';return}
+  const m={};plSet().slice().reverse().forEach(p=>Object.keys(p.items).forEach(k=>m[k]=p.items[k]));
+  S.rows.forEach(r=>{if(r.ma&&!(r.ma in m))m[r.ma]=0});
+  const pre=[],mid=[];Object.keys(m).sort().forEach(k=>{const n=nz(k);if(n===q&&Object.keys(m).length)return;if(n.startsWith(q))pre.push(k);else if(n.includes(q))mid.push(k)});
+  BSG=pre.concat(mid).slice(0,10).map(k=>({k,g:m[k]}));
+  box.innerHTML=BSG.map((x,i)=>`<button type="button" onpointerdown="event.preventDefault();bSugPick(${i})">${eA(x.k)}${x.g?`<small>${F(x.g)}</small>`:''}</button>`).join('');
+  box.className=BSG.length?'bsg on':'bsg'}
+function bSugPick(i){const x=BSG[i];if(!x)return;const ta=$('bt');let pos=ta.selectionStart;if(pos==null)pos=ta.value.length;
+  const ls=ta.value.lastIndexOf('\n',pos-1)+1;ta.setRangeText(x.k,ls,pos,'end');
+  if(!BKB_COARSE)ta.focus();bPrev()}
+function bOpen(){const d=$('dv').value.trim();if(!d){$('gh').textContent='Nhập tên đơn vị trước';$('gh').className='no';$('dv').focus();return}$('bd').value=$('ngay').value||new Date().toISOString().slice(0,10);$('bt0').textContent=d+' · dùng chung kênh, khu vực, thanh toán, ck, ghi chú ở form';$('bt').value='';$('bs').textContent='';$('bsg').className='bsg';$('bsg').innerHTML='';if(!$('bt').dataset.sg){$('bt').dataset.sg='1';['keyup','click','select'].forEach(ev=>$('bt').addEventListener(ev,bSug))}$('bm').classList.remove('hide');if(BKB_COARSE){bkbInit()}else setTimeout(()=>$('bt').focus(),50)}
 function bClose(){$('bm').classList.add('hide')}
 function bAdd(){if(needPay()){bClose();return}const{out,bad}=bParse();if(!out.length||bad.length){bPrev();if(!out.length)$('bs').textContent='Chưa có mã hợp lệ';return}
  if(!$('bd').value){$('bs').className='no';$('bs').textContent='Chọn ngày giao';return}$('ngay').value=$('bd').value;

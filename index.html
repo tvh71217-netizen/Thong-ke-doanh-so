@@ -79,7 +79,7 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 <button class="btn s hide" id="bdone" onclick="reset()">Xong — xoá form để nhập mới</button>
 <button class="btn s hide" id="cancel" onclick="reset()">Huỷ sửa</button>
 </div>
-<div class="card"><b>Tổng mức ck: <span id="ckAll" class="no">0</span></b><div id="list"></div></div>
+<div class="card"><b><span id="ckLb">Tổng mức ck: </span><span id="ckAll" class="no">0</span></b><div id="list"></div></div>
 </div>
 
 <div id="p2" class="hide">
@@ -303,7 +303,7 @@ function ed(id){const r=S.rows.find(x=>x.id==id);edit=id;
 let dq=null;function del(id){const r=S.rows.find(x=>x.id==id);if(!r)return;dq=id;$('dmi').textContent=`${r.dv} · ${D(r.ngay)} · ${r.ma} · ${F(r.gia)} × ${r.sl} = ${F(tien(r))}`;$('dm').classList.remove('hide')}
 function delNo(){dq=null;$('dm').classList.add('hide')}
 function delYes(){if(dq!=null){S.rows=S.rows.filter(x=>x.id!=dq);persist();render()}delNo()}
-const tien=r=>r.gia*r.sl,isDu=r=>/^\s*d[ưu](?![a-z0-9à-ỹ])/i.test(r.ma||''),cnT=r=>isDu(r)?-tien(r):tien(r),ckt=r=>Math.round(tien(r)*r.ck/100);
+const tien=r=>r.gia*r.sl,isDu=r=>/^\s*d[ưu](?![a-z0-9à-ỹ])/i.test(r.ma||''),cnT=r=>isDu(r)?-tien(r):tien(r),ckt=r=>Math.round(tien(r)*r.ck/100);const MK=()=>{const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')},ckm=r=>(r.ngay||'').slice(0,7)==MK()?ckt(r):0;
 function hRow(r){return `<div class="row"><div><b>${r.dv}</b> <small>· ${KN[r.kenh]} · ${r.kv}</small><br>${r.ma} · ${F(r.gia)} × ${r.sl} = <b>${F(tien(r))}</b><br><small class="${r.tt?'ok':'no'}">${r.tt?'✓ '+(r.pay||'Đã tt')+(r.payNote?' · '+eA(r.payNote):''):'Chưa tt'}</small>${r.ck?`<small> · ck ${r.ck}% = ${F(ckt(r))}</small>`:''}${r.note?`<small> · ${r.note}</small>`:''}</div><div><button onclick="hEd(${r.id})">Sửa</button><button onclick="del(${r.id})">Xoá</button></div></div>`}
 function hEd(id){hClose();ed(id)}
 function hOpen(){const m=S.rows.map(r=>r.ngay).sort().pop()||new Date().toISOString().slice(0,10);$('hd').value=$('hd').value||m;hShow();$('hm').classList.remove('hide')}
@@ -311,7 +311,7 @@ function hClose(){$('hm').classList.add('hide')}
 function hShow(){const d=$('hd').value,L=S.rows.filter(r=>r.ngay==d).sort((a,b)=>b.id-a.id);$('hl').innerHTML=!d?'<small>Chọn ngày để xem</small>':L.length?`<small>${L.reduce((a,r)=>a+(+r.sl||0),0)} bình · tổng ${F(L.reduce((a,r)=>a+cnT(r),0))}</small>`+L.map(hRow).join(''):'<small>Không có dữ liệu ngày '+D(d)+'</small>'}
 let LM=30;
 function render(){
- $('ckAll').textContent=F(S.rows.reduce((a,r)=>a+ckt(r),0));
+ $('ckAll').textContent=F(S.rows.reduce((a,r)=>a+ckm(r),0));{const k=MK();$('ckLb').textContent='Tổng mức ck tháng '+k.slice(5)+'/'+k.slice(0,4)+': '}
  $('list').innerHTML='<button class="btn s" onclick="hOpen()">📅 Xem lịch sử · chọn ngày để xem</button><small style="display:block;margin-top:6px">'+S.rows.length+' dòng đã lưu</small>';if(!$('hm').classList.contains('hide'))hShow()}
 function sum(){
  GN=[];
@@ -321,7 +321,7 @@ function sum(){
   h+=`<div class="card" style="padding:0;overflow:hidden"><div class="kv" style="background:${colOf(k)};color:#111">${k}</div><div style="padding:0 8px 8px">`;
   [...new Set(rows.filter(r=>r.kv==k).map(r=>r.dv))].forEach(d=>{
    const L=rows.filter(r=>r.kv==k&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
-   const t=L.reduce((a,r)=>a+cnT(r),0),q=L.reduce((a,r)=>a+(isDu(r)?0:r.sl),0),c=L.reduce((a,r)=>a+ckt(r),0),u=L.filter(r=>!r.tt).reduce((a,r)=>a+cnT(r),0);
+   const t=L.reduce((a,r)=>a+cnT(r),0),q=L.reduce((a,r)=>a+(isDu(r)?0:r.sl),0),c=L.reduce((a,r)=>a+ckm(r),0),u=L.filter(r=>!r.tt).reduce((a,r)=>a+cnT(r),0);
    T+=t;Q+=q;C+=c;U+=u;
    h+=`<div class="dv" style="background:${colOf(k)}">${d}</div><div style="text-align:right"><button onclick="gOpen(${GN.push(d)-1})" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div class="tw"><table><tr><th>Ngày giao</th><th>Tên Hàng Hoá</th><th>Giá</th><th>SL</th><th>Thành Tiền</th><th>Ghi chú</th><th>CK</th></tr>`+
    (()=>{const G=grp(d,L);
@@ -333,7 +333,7 @@ function sum(){
    `</table></div>`});
   h+='</div></div>'});
  $('sumv').innerHTML=(h||'<div class="card"><small>Chưa có dữ liệu cho kênh này</small></div>')+
- `<div class="card"><b>Tổng ${KN[K]}</b><div class="sum"><span>Số lượng</span><b>${Q}</b></div><div class="sum"><span>Doanh số</span><b>${F(T)}</b></div><div class="sum"><span>Chưa thanh toán</span><b class="no">${F(U)}</b></div><div class="sum"><span>Tổng chiết khấu</span><b class="no">${F(C)}</b></div></div>`}
+ `<div class="card"><b>Tổng ${KN[K]}</b><div class="sum"><span>Số lượng</span><b>${Q}</b></div><div class="sum"><span>Doanh số</span><b>${F(T)}</b></div><div class="sum"><span>Chưa thanh toán</span><b class="no">${F(U)}</b></div><div class="sum"><span>Tổng chiết khấu tháng ${MK().slice(5)}/${MK().slice(0,4)}</span><b class="no">${F(C)}</b></div></div>`}
 function aOpen(){$('apw').value='';$('aer').textContent='';$('am').classList.remove('hide')}
 function aClose(){$('am').classList.add('hide')}
 function aYes(){if($('apw').value!=='1111'){$('aer').textContent='Sai mật khẩu';return}S.rows=[];S.units=[];S.groups=[];persist();aClose();reset();render();dvList();sum();cn()}

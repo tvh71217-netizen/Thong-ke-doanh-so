@@ -79,7 +79,7 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 <button class="btn s hide" id="bdone" onclick="reset()">Xong — xoá form để nhập mới</button>
 <button class="btn s hide" id="cancel" onclick="reset()">Huỷ sửa</button>
 </div>
-<div class="card"><b><span id="ckLb">Tổng mức ck: </span><span id="ckAll" class="no">0</span></b><div id="list"></div></div>
+<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b><span id="ckLb">Tổng mức ck: </span><span id="ckAll" class="no">0</span></b><input id="ckm" type="month" onchange="ckMonth(this.value)" style="width:auto;padding:6px"></div><div id="list"></div></div>
 </div>
 
 <div id="p2" class="hide">
@@ -303,7 +303,7 @@ function ed(id){const r=S.rows.find(x=>x.id==id);edit=id;
 let dq=null;function del(id){const r=S.rows.find(x=>x.id==id);if(!r)return;dq=id;$('dmi').textContent=`${r.dv} · ${D(r.ngay)} · ${r.ma} · ${F(r.gia)} × ${r.sl} = ${F(tien(r))}`;$('dm').classList.remove('hide')}
 function delNo(){dq=null;$('dm').classList.add('hide')}
 function delYes(){if(dq!=null){S.rows=S.rows.filter(x=>x.id!=dq);persist();render()}delNo()}
-const tien=r=>r.gia*r.sl,isDu=r=>/^\s*d[ưu](?![a-z0-9à-ỹ])/i.test(r.ma||''),cnT=r=>isDu(r)?-tien(r):tien(r),ckt=r=>Math.round(tien(r)*r.ck/100);const MK=()=>{const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')},ckm=r=>(r.ngay||'').slice(0,7)==MK()?ckt(r):0;
+const tien=r=>r.gia*r.sl,isDu=r=>/^\s*d[ưu](?![a-z0-9à-ỹ])/i.test(r.ma||''),cnT=r=>isDu(r)?-tien(r):tien(r),ckt=r=>Math.round(tien(r)*r.ck/100);let SM='';const NOWM=()=>{const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')},MK=()=>SM||NOWM(),ckMonth=v=>{SM=v&&v!=NOWM()?v:'';render();if(typeof sum=='function')sum()},ckm=r=>(r.ngay||'').slice(0,7)==MK()?ckt(r):0;
 function hRow(r){return `<div class="row"><div><b>${r.dv}</b> <small>· ${KN[r.kenh]} · ${r.kv}</small><br>${r.ma} · ${F(r.gia)} × ${r.sl} = <b>${F(tien(r))}</b><br><small class="${r.tt?'ok':'no'}">${r.tt?'✓ '+(r.pay||'Đã tt')+(r.payNote?' · '+eA(r.payNote):''):'Chưa tt'}</small>${r.ck?`<small> · ck ${r.ck}% = ${F(ckt(r))}</small>`:''}${r.note?`<small> · ${r.note}</small>`:''}</div><div><button onclick="hEd(${r.id})">Sửa</button><button onclick="del(${r.id})">Xoá</button></div></div>`}
 function hEd(id){hClose();ed(id)}
 function hOpen(){const m=S.rows.map(r=>r.ngay).sort().pop()||new Date().toISOString().slice(0,10);$('hd').value=$('hd').value||m;hShow();$('hm').classList.remove('hide')}
@@ -311,7 +311,7 @@ function hClose(){$('hm').classList.add('hide')}
 function hShow(){const d=$('hd').value,L=S.rows.filter(r=>r.ngay==d).sort((a,b)=>b.id-a.id);$('hl').innerHTML=!d?'<small>Chọn ngày để xem</small>':L.length?`<small>${L.reduce((a,r)=>a+(+r.sl||0),0)} bình · tổng ${F(L.reduce((a,r)=>a+cnT(r),0))}</small>`+L.map(hRow).join(''):'<small>Không có dữ liệu ngày '+D(d)+'</small>'}
 let LM=30;
 function render(){
- $('ckAll').textContent=F(S.rows.reduce((a,r)=>a+ckm(r),0));{const k=MK();$('ckLb').textContent='Tổng mức ck tháng '+k.slice(5)+'/'+k.slice(0,4)+': '}
+ $('ckAll').textContent=F(S.rows.reduce((a,r)=>a+ckm(r),0));{const k=MK();$('ckm').value=k;$('ckLb').textContent='Tổng mức ck tháng '+k.slice(5)+'/'+k.slice(0,4)+': '}
  $('list').innerHTML='<button class="btn s" onclick="hOpen()">📅 Xem lịch sử · chọn ngày để xem</button><small style="display:block;margin-top:6px">'+S.rows.length+' dòng đã lưu</small>';if(!$('hm').classList.contains('hide'))hShow()}
 function sum(){
  GN=[];

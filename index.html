@@ -69,9 +69,8 @@ input[type="date"]::-webkit-date-and-time-value,input[type="month"]::-webkit-dat
 
 <div id="p1">
 <div class="card">
-<div class="g2"><div><label>Kênh <a onclick="kmOpen()" style="float:right;color:#1a6fd4;font-size:12px;cursor:pointer">Quản lý</a></label><select id="kenh" onchange="plOpts()"></select></div>
-<div><label>Khu vực</label><select id="kv" onchange="dvList()"></select></div></div>
-<div style="display:flex;gap:6px;margin-top:8px"><input id="newkv" placeholder="Thêm khu vực mới (VD: Bình Thạnh)"><button class="btn s" style="width:auto;margin:0;padding:0 14px" onclick="addKv()">Thêm</button></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><label>Kênh</label><button onclick="kmOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý</button></div><select id="kenh" onchange="plOpts()"></select>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><label>Khu vực</label><button onclick="kvmOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý</button></div><select id="kv" onchange="dvList()"></select>
 <div style="display:flex;justify-content:space-between;align-items:baseline"><label>Tên đơn vị</label><button onclick="uOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý / xoá đơn vị</button></div><input id="dv" list="dvl" oninput="dvIn(event)" placeholder="VD: Gara Thông Cao"><datalist id="dvl"></datalist><datalist id="mal"></datalist>
 <label>Bảng giá áp dụng</label><select id="plsel" onchange="plPick()"></select>
 <div class="g2"><div><label>Ngày giao</label><input id="ngay" type="date" onchange="bSync('d')"></div>
@@ -104,6 +103,7 @@ input[type="date"]::-webkit-date-and-time-value,input[type="month"]::-webkit-dat
 <div id="plbody"></div>
 <div class="card"><b>Đơn vị dùng bảng giá</b><div style="color:var(--mu);font-size:13px;margin:2px 0 4px">Bấm để chọn một hoặc nhiều bảng giá cho mỗi đơn vị (bảng nào sáng là đang dùng). Ở tab Thống kê, mã nào có trong bảng giá của đơn vị là giá tự điền.</div><div id="plun"></div></div>
 </div>
+<div id="kvm" class="mo hide" style="z-index:10" onclick="if(event.target===this)kvmClose()"><div class="mb" style="max-height:85vh;overflow:auto"><b>Quản lý khu vực</b><div id="kvml" style="margin:8px 0"></div><div style="display:flex;gap:6px"><input id="kvmn" placeholder="Tên khu vực mới (VD: Bình Thạnh)" style="flex:1"><button class="btn" style="margin-top:0;width:auto;padding:0 16px" onclick="kvmAdd()">Thêm</button></div><button class="btn s" onclick="kvmClose()">Đóng</button></div></div>
 <div id="km" class="mo hide" style="z-index:10" onclick="if(event.target===this)kmClose()"><div class="mb" style="max-height:85vh;overflow:auto"><b>Quản lý kênh</b><div id="kml" style="margin:8px 0"></div><div style="display:flex;gap:6px"><input id="kmn" placeholder="Tên kênh mới (VD: Khách lẻ)" style="flex:1"><button class="btn" style="margin-top:0;width:auto;padding:0 16px" onclick="kmAdd()">Thêm</button></div><button class="btn s" onclick="kmClose()">Đóng</button></div></div>
 <div id="dm" class="mo hide" style="z-index:10" onclick="if(event.target===this)delNo()"><div class="mb"><b>Xoá dòng này?</b><div id="dmi" style="color:var(--mu);font-size:13px;margin:6px 0 12px"></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="delNo()">No</button><button class="btn" style="margin-top:0;background:var(--red)" onclick="delYes()">Yes, xoá</button></div></div></div>
 <div id="mo" class="mo hide"><div class="mb"><b>Xác nhận đã thanh toán</b><div id="mi" style="color:var(--mu);font-size:13px;margin-top:4px"></div><label>Phương thức thanh toán <span style="color:var(--red)">*</span></label><input id="pn" placeholder="VD: Đã tt ck, đã tt tm, đã ck cty…" oninput="this.style.borderColor=''"><div class="g2"><button class="btn s" onclick="cp()">Huỷ</button><button class="btn" style="margin-top:6px" onclick="okp()">Xác nhận</button></div></div></div>
@@ -228,7 +228,13 @@ function pdfBuild(keys,opt){opt=opt||{};
  put(`trailer\n<< /Size ${N} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);return new Blob(parts,{type:'application/pdf'})}
 function kn(b){K=b.dataset.k;document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x==b));sum()}
 function kvOpts(){$('kv').innerHTML=S.regions.map(r=>`<option>${r}</option>`).join('')}
-function addKv(){const n=$('newkv').value.trim();if(!n)return;if(!S.regions.includes(n))S.regions.push(n);persist();kvOpts();$('kv').value=n;$('newkv').value='';dvList()}
+function kvmOpen(){kvmRender();$('kvm').classList.remove('hide')}
+function kvmClose(){$('kvm').classList.add('hide')}
+function kvmRender(){$('kvml').innerHTML=S.regions.map((x,i)=>`<div class="row" style="align-items:center"><b style="flex:1">${eA(x)}</b><div><button onclick="kvmRen(${i})">Đổi tên</button><button onclick="kvmDel(${i})">Xoá</button></div></div>`).join('')}
+function kvmDone(sel){persist();kvOpts();if(sel&&S.regions.includes(sel))$('kv').value=sel;dvList();kvmRender();render();sum()}
+function kvmAdd(){const n=kmClean($('kvmn').value);if(!n)return;if(S.regions.some(x=>x.toLowerCase()==n.toLowerCase())){alert('Khu vực này đã có');return}S.regions.push(n);$('kvmn').value='';kvmDone(n)}
+function kvmRen(i){const o=S.regions[i],n=kmClean(prompt('Tên khu vực',o));if(!n||n==o)return;if(S.regions.some((x,j)=>j!=i&&x.toLowerCase()==n.toLowerCase())){alert('Khu vực này đã có');return}S.regions[i]=n;S.rows.forEach(r=>{if(r.kv==o)r.kv=n});S.units.forEach(u=>{if(u.kv==o)u.kv=n});if(COL[o]&&!COL[n]){COL[n]=COL[o];delete COL[o]}kvmDone(n)}
+function kvmDel(i){const x=S.regions[i];if(S.regions.length<2){alert('Phải giữ lại ít nhất 1 khu vực');return}const c=S.rows.filter(r=>r.kv==x).length,u=S.units.filter(r=>r.kv==x).length;if(c||u){alert('Khu vực "'+x+'" đang có '+c+' dòng, '+u+' đơn vị. Hãy xoá hoặc chuyển hết trước khi xoá khu vực.');return}if(!confirm('Xoá khu vực "'+x+'"?'))return;S.regions.splice(i,1);kvmDone()}
 function dvIn(e){pick();const v=$('dv').value.trim().toLowerCase();if(e&&(e.inputType==='insertReplacementText'||!e.inputType)&&S.units.some(x=>x.dv.toLowerCase()==v))$('dv').blur()}
 function pick(){const v=$('dv').value.trim().toLowerCase();const u=S.units.find(x=>x.dv.toLowerCase()==v);if(u){if(S.regions.includes(u.kv))$('kv').value=u.kv;$('kenh').value=u.kenh;plOpts();$('plsel').value=(u.pls&&u.pls[0])||'';maList();plFill()}}
 function dvList(){maList();const k=$('kv').value;$('dvl').innerHTML=S.units.map(u=>`<option value="${u.dv}" label="${u.kv}">`).join('')}

@@ -337,7 +337,7 @@ function sum(){
   [...new Set(rows.filter(r=>r.kv==k).map(r=>r.dv))].forEach(d=>{
    const L=rows.filter(r=>r.kv==k&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
    const t=L.reduce((a,r)=>a+cnT(r),0),q=L.reduce((a,r)=>a+(isDu(r)?0:r.sl),0),c=L.reduce((a,r)=>a+ckm(r),0),u=L.filter(r=>!r.tt).reduce((a,r)=>a+cnT(r),0);
-   T+=t;Q+=q;C+=c;U+=u;
+   {const Lm=L.filter(r=>(r.ngay||'').slice(0,7)==MK());T+=Lm.reduce((x,r)=>x+cnT(r),0);Q+=Lm.reduce((x,r)=>x+(isDu(r)?0:r.sl),0)}C+=c;U+=u;
    h+=`<div class="dv" style="background:${colOf(k)}">${d}</div><div style="text-align:right"><button onclick="gOpen(${GN.push(d)-1})" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div class="tw"><table><tr><th>Ngày giao</th><th>Tên Hàng Hoá</th><th>Giá</th><th>SL</th><th>Thành Tiền</th><th>Ghi chú</th><th>CK</th></tr>`+
    (()=>{const G=grp(d,L);
    return G.map(g=>{const gm=g.m&&g.length>1,ap=gm&&g.every(r=>r.tt),bg=gm?' style="background:rgba(0,0,0,.035)"':'';
@@ -348,7 +348,7 @@ function sum(){
    `</table></div>`});
   h+='</div></div>'});
  $('sumv').innerHTML=(h||'<div class="card"><small>Chưa có dữ liệu cho kênh này</small></div>')+
- `<div class="card"><b>Tổng ${KN[K]}</b><div class="sum"><span>Số lượng</span><b>${Q}</b></div><div class="sum"><span>Doanh số</span><b>${F(T)}</b></div><div class="sum"><span>Chưa thanh toán</span><b class="no">${F(U)}</b></div><div class="sum"><span>Tổng chiết khấu tháng ${MK().slice(5)}/${MK().slice(0,4)}</span><b class="no">${F(C)}</b></div></div>`}
+ `<div class="card"><b>Tổng ${KN[K]}</b><div class="sum"><span>Số lượng tháng ${MK().slice(5)}/${MK().slice(0,4)}</span><b>${Q}</b></div><div class="sum"><span>Doanh số tháng ${MK().slice(5)}/${MK().slice(0,4)}</span><b>${F(T)}</b></div><div class="sum"><span>Chưa thanh toán</span><b class="no">${F(U)}</b></div><div class="sum"><span>Tổng chiết khấu tháng ${MK().slice(5)}/${MK().slice(0,4)}</span><b class="no">${F(C)}</b></div></div>`}
 function aOpen(){$('apw').value='';$('aer').textContent='';$('am').classList.remove('hide')}
 function aClose(){$('am').classList.add('hide')}
 function aYes(){if($('apw').value!=='1111'){$('aer').textContent='Sai mật khẩu';return}S.rows=[];S.units=[];S.groups=[];persist();aClose();reset();render();dvList();sum();cn()}

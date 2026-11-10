@@ -54,6 +54,15 @@ td{padding:6px;border:1px solid var(--bd);text-align:center}
 .kbx button.sp{flex:5 1 0;font-size:16px}
 .kbx button.en{flex:2 1 0;font-size:16px}
 }
+
+/* ===== SỬA LỖI TRÀN NGANG TRÊN IPHONE ===== */
+.g2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.g2>*,.card,.mb,.row>*{min-width:0;max-width:100%}
+input[type="date"],input[type="month"]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;min-height:44px;text-align:left}
+input[type="date"]{width:100%}
+input[type="date"]::-webkit-date-and-time-value,input[type="month"]::-webkit-date-and-time-value{text-align:left;min-width:0}
+#ckm{min-width:140px}
+.row>div:first-child{flex:1 1 auto}
 </style></head><body>
 <h1 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Thống Kê Doanh Số<button onclick="xp()" style="border:1px solid var(--pri);background:var(--card);color:var(--pri);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600">Xuất Excel</button></h1>
 <div class="tabs"><button id="t1" class="on" onclick="tab(1)">Thống kê</button><button id="t2" onclick="tab(2)">Tổng kết</button><button id="t3" onclick="tab(3)">Công nợ</button><button id="t4" onclick="tab(4)">Giá</button></div>

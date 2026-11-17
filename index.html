@@ -161,7 +161,7 @@ function ccAll(b,v){b.closest('.ub').querySelectorAll('.cc').forEach(x=>x.checke
 function ccGo(b){const c=[...b.closest('.ub').querySelectorAll('.cc:checked')].map(x=>+x.value);if(!c.length){b.textContent='Tích chọn mã trước';setTimeout(()=>b.textContent='Xác nhận đã tt',1500);return}pids=c;pid=null;const L=c.map(i=>S.rows.find(x=>x.id==i)).filter(Boolean);$('mi').textContent=L[0].dv+' · '+L.length+' mã · '+F(L.reduce((a,r)=>a+cnT(r),0))+'đ'+(L.length>1?' · sẽ gộp thành 1 nhóm trong Tổng kết':'');pReset();$('mo').classList.remove('hide')}
 function cp(){pid=null;pids=null;$('mo').classList.add('hide')}
 function okp(){let t=$('pn').value.trim();if(!t){$('pn').style.borderColor='var(--red)';$('pn').placeholder='Bắt buộc nhập phương thức thanh toán';$('pn').focus();return}const ids=pids||[pid],L=ids.map(i=>S.rows.find(x=>x.id==i)).filter(Boolean);if(!L.length)return cp();
-let nc=null;if(ppm){const x=+$('ppa').value.replace(/\D/g,'')||0,tot=L.reduce((a,r)=>a+cnT(r),0);if(!(x>0&&x<tot&&tot>0)){ppCalc();if(!x)$('ppr').innerHTML='<span class="no">Nhập số tiền khách đã trả</span>';$('ppa').focus();return}const R=tot-x;nc={id:Date.now(),kenh:L[0].kenh,kv:L[0].kv,dv:L[0].dv,ngay:L.map(r=>r.ngay||'').sort().pop(),ma:'NỢ CŨ',gia:R,sl:1,tt:0,ck:0,note:'',nc:1}}
+let nc=null;if(ppm){const x=+$('ppa').value.replace(/\D/g,'')||0,tot=L.reduce((a,r)=>a+cnT(r),0);if(!(x>0&&x<tot&&tot>0)){ppCalc();if(!x)$('ppr').innerHTML='<span class="no">Nhập số tiền khách đã trả</span>';$('ppa').focus();return}const R=tot-x,lr=[...L].sort((a,b)=>(a.ngay||'')<(b.ngay||'')?-1:(a.ngay||'')>(b.ngay||'')?1:a.id-b.id).pop();nc={id:Date.now(),kenh:L[0].kenh,kv:L[0].kv,dv:L[0].dv,ngay:lr.ngay,ma:'NỢ CŨ',gia:R,sl:1,tt:0,ck:0,note:'',nc:1,par:lr.id}}
 L.forEach(r=>{r.tt=1;r.pay='';r.payNote=''});
 if(L.length==1){L[0].payNote=t}else{const ii=L.map(r=>+r.id),set=new Set(ii),dn=L[0].dv;let G=S.groups.find(g=>g.dv==dn&&g.ids.length==ii.length&&g.ids.every(i=>set.has(i)));
  if(!G){S.groups.forEach(g=>{if(g.dv==dn)g.ids=g.ids.filter(i=>!set.has(i))});S.groups=S.groups.filter(g=>g.ids.length>=2);G={dv:dn,ids:ii};S.groups.push(G)}
@@ -371,7 +371,7 @@ let gd=null,GN=[];
 function grp(d,L){const gi={},fi={};S.groups.forEach((g,i)=>{if(g.dv==d)g.ids.forEach(id=>gi[id]=i)});
  const fd={};L.forEach(x=>{const k=gi[x.id];if(k!==undefined&&(fi[k]===undefined||x.ngay>fi[k]||(x.ngay==fi[k]&&x.id>fd[k]))){fi[k]=x.ngay;fd[k]=x.id}});
  const key=x=>gi[x.id]!==undefined?'m'+gi[x.id]:x.ngay,ord=x=>gi[x.id]!==undefined?fi[gi[x.id]]:x.ngay;
- const fid=x=>gi[x.id]!==undefined?fd[gi[x.id]]:x.id,o=[...L].sort((a,b)=>ord(a)<ord(b)?-1:ord(a)>ord(b)?1:fid(a)-fid(b)||(key(a)<key(b)?-1:key(a)>key(b)?1:a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id)),G=[];
+ const fid=x=>x.nc&&x.par?(gi[x.par]!==undefined&&fd[gi[x.par]]!==undefined?fd[gi[x.par]]:x.par):gi[x.id]!==undefined?fd[gi[x.id]]:x.id,rk=x=>x.nc&&x.par?1:0,o=[...L].sort((a,b)=>ord(a)<ord(b)?-1:ord(a)>ord(b)?1:fid(a)-fid(b)||rk(a)-rk(b)||(key(a)<key(b)?-1:key(a)>key(b)?1:a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id)),G=[];
  o.forEach(x=>{const g=G[G.length-1];if(g&&key(g[0])==key(x))g.push(x);else G.push([x])});G.forEach(g=>{g.m=key(g[0])[0]=='m';g.gi=gi[g[0].id]});return G}
 function gOpen(i){gd=GN[i];$('gt').textContent=gd+' · tích chọn các mã muốn gộp thành 1 hàng Tổng (không cần liền ngày)';gList();$('gm').classList.remove('hide')}
 function gClose(){$('gm').classList.add('hide');gd=null;if(!$('p2').classList.contains('hide'))sum();if(!$('p3').classList.contains('hide'))cn()}

@@ -27,6 +27,7 @@ input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8p
 .row button{border:0;background:none;color:var(--mu);font-size:13px;padding:2px 6px}
 .seg{display:flex;gap:6px;padding:0 12px 10px}
 .kv{padding:8px 12px;font-weight:700;border-radius:10px 10px 0 0}
+.qs{padding:0 12px 10px;position:relative}.qs input{padding:10px 12px}.qr{margin-top:6px;max-height:50vh;overflow:auto;border:1px solid var(--bd);border-radius:10px;background:var(--card)}.qr div{padding:10px 12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;gap:8px;align-items:center;cursor:pointer}.qr div:first-child{border-top:0}.qr small{color:var(--mu)}.qr .qe{color:var(--mu);cursor:default}.qf{animation:qf 1.6s ease}@keyframes qf{0%,60%{box-shadow:0 0 0 3px #f5a623;background-color:#ffe9b8}100%{box-shadow:none}}.dv,.ub{scroll-margin-top:12px}
 .dv{background:#bdd7ee;color:#111;text-align:center;font-weight:700;padding:6px;margin-top:8px}
 .tw{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:480px;font-size:13px}
 th{background:var(--hd);color:#fff;padding:6px;border:1px solid var(--bd)}
@@ -92,6 +93,7 @@ input[type="date"]::-webkit-date-and-time-value,input[type="month"]::-webkit-dat
 
 <div id="p2" class="hide">
 <div class="seg"></div>
+<div class="qs"><input id="q2" type="search" placeholder="🔍 Tìm tên đơn vị…" autocomplete="off" oninput="qIn(2)" onkeydown="qKey(event,2)"><div id="qr2" class="qr hide"></div></div>
 <div id="sumv"></div>
 </div>
 
@@ -111,7 +113,7 @@ input[type="date"]::-webkit-date-and-time-value,input[type="month"]::-webkit-dat
 <div id="gm" class="mo hide" onclick="if(event.target===this)gClose()"><div class="mb"><b>Gộp tổng tuỳ chọn</b><div id="gt" style="color:var(--mu);font-size:13px;margin:4px 0 8px"></div><div id="gl"></div><div id="gs" style="font-weight:600;padding:6px 0"></div><div class="g2"><button class="btn s" onclick="gClose()">Đóng</button><button class="btn" style="margin-top:6px" onclick="gAdd()">Thêm tổng</button></div></div></div>
 <div id="pm" class="mo hide" onclick="if(event.target===this)pClose()"><div class="mb"><div id="pv1" style="display:flex;flex-direction:column;min-height:0;flex:1 1 auto"><b>Xuất công nợ</b><div style="color:var(--mu);font-size:13px;margin:4px 0 8px">Tích chọn đơn vị muốn xuất</div><div id="pl" style="max-height:45vh;overflow:auto"></div><div id="ps" style="font-weight:600;padding:8px 0"></div><div class="g2"><button class="btn s" style="margin-top:0" onclick="pAll(0)">Bỏ chọn hết</button><button class="btn s" style="margin-top:0" onclick="pAll(1)">Chọn hết</button></div><div class="g2"><button class="btn s" onclick="pClose()">Đóng</button><button class="btn" style="margin-top:6px" onclick="pPrev()">Xem trước</button></div></div><div id="pv2" class="hide" style="display:flex;flex-direction:column;min-height:0;flex:1 1 auto"><b>Xem trước</b><div style="flex:1 1 auto;min-height:0;max-height:62vh;overflow:auto;margin:8px 0;border:1px solid var(--bd);border-radius:8px;background:#fff"><img id="pimg" alt="" style="display:block;width:100%"></div><div class="g2"><button class="btn s" onclick="pBack()">Quay lại</button><button class="btn" style="margin-top:6px" onclick="pSave()">Xuất PNG</button></div></div></div></div>
 <div id="um" class="mo hide" onclick="if(event.target===this)uClose()"><div class="mb"><b>Đơn vị đã lưu</b><div style="color:var(--mu);font-size:13px;margin:4px 0">Đổi tên: chạm Sửa. Xoá: chạm Xoá 2 lần — nếu đơn vị còn dữ liệu thì các dòng đó cũng bị xoá.</div><div id="ul" style="max-height:55vh;overflow:auto"></div><button class="btn s" onclick="uClose()">Đóng</button></div></div>
-<div id="p3" class="hide"><div id="cnv"></div></div>
+<div id="p3" class="hide"><div class="qs"><input id="q3" type="search" placeholder="🔍 Tìm tên đơn vị…" autocomplete="off" oninput="qIn(3)" onkeydown="qKey(event,3)"><div id="qr3" class="qr hide"></div></div><div id="cnv"></div></div>
 <div style="padding:8px 12px 24px"><button class="btn s" style="color:var(--red);border-color:var(--red)" onclick="aOpen()">Xoá tất cả dữ liệu</button></div>
 <div id="hm" class="mo hide" onclick="if(event.target===this)hClose()"><div class="mb" style="max-height:85vh;overflow:auto"><b>Lịch sử theo ngày</b><input id="hd" type="date" onchange="hShow()" style="margin:8px 0"><div id="hl"></div><button class="btn s" onclick="hClose()">Đóng</button></div></div>
 <div id="am" class="mo hide" onclick="if(event.target===this)aClose()"><div class="mb"><b style="color:var(--red)">Xoá tất cả dữ liệu</b><div style="color:var(--mu);font-size:13px;margin:4px 0 8px">Xoá toàn bộ dòng nhập hàng, đơn vị đã lưu và các tổng gộp. Không thể khôi phục. Danh sách khu vực được giữ lại.</div><label>Nhập mật khẩu</label><input id="apw" type="password" inputmode="numeric" placeholder="Mật khẩu"><small id="aer" class="no"></small><div class="g2"><button class="btn s" onclick="aClose()">Huỷ</button><button class="btn" style="margin-top:6px;background:var(--red)" onclick="aYes()">Xoá tất cả</button></div></div></div>
@@ -349,7 +351,7 @@ function sum(){
    const L=rows.filter(r=>r.kv==k&&r.dv==d).sort((a,b)=>a.ngay<b.ngay?-1:a.ngay>b.ngay?1:a.id-b.id);
    const t=L.reduce((a,r)=>a+cnT(r),0),q=L.reduce((a,r)=>a+(isDu(r)?0:r.sl),0),c=L.reduce((a,r)=>a+ckm(r),0),u=L.filter(r=>!r.tt).reduce((a,r)=>a+cnT(r),0);
    {const Lm=L.filter(r=>(r.ngay||'').slice(0,7)==MK()&&!r.nc);T+=Lm.reduce((x,r)=>x+cnT(r),0);Q+=Lm.reduce((x,r)=>x+(isDu(r)?0:r.sl),0)}C+=c;U+=u;
-   h+=`<div class="dv" style="background:${colOf(k)}">${d}</div><div style="text-align:right"><button onclick="gOpen(${GN.push(d)-1})" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div class="tw"><table><tr><th>Ngày giao</th><th>Tên Hàng Hoá</th><th>Giá</th><th>SL</th><th>Thành Tiền</th><th>Ghi chú</th><th>CK</th></tr>`+
+   h+=`<div class="dv" data-u="${eA(K+'|'+k+'|'+d)}" style="background:${colOf(k)}">${d}</div><div style="text-align:right"><button onclick="gOpen(${GN.push(d)-1})" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Σ Gộp đơn${S.groups.some(g=>g.dv==d)?' ('+S.groups.filter(g=>g.dv==d).length+')':''}</button></div><div class="tw"><table><tr><th>Ngày giao</th><th>Tên Hàng Hoá</th><th>Giá</th><th>SL</th><th>Thành Tiền</th><th>Ghi chú</th><th>CK</th></tr>`+
    (()=>{const G=grp(d,L);
    return G.map(g=>{const gm=g.m&&g.length>1,ap=gm&&g.every(r=>r.tt),bg=gm?' style="background:rgba(0,0,0,.035)"':'';
    const rowH=g.map(r=>`<tr${bg}><td>${D(r.ngay)}</td><td>${r.ma}</td><td>${F(r.gia)}</td><td>${r.sl}</td><td${isDu(r)?' class="ok"':''}>${F(cnT(r))}</td><td>${sn(r,ap)}</td><td>${r.ck?r.ck+'%<br>'+F(ckt(r)):''}</td></tr>`).join('');
@@ -360,6 +362,21 @@ function sum(){
   h+='</div></div>'});
  $('sumv').innerHTML=(h||'<div class="card"><small>Chưa có dữ liệu cho kênh này</small></div>')+
  `<div class="card"><b>Tổng ${KN[K]}</b><div class="sum"><span>Số lượng tháng ${MK().slice(5)}/${MK().slice(0,4)}</span><b>${Q}</b></div><div class="sum"><span>Doanh số tháng ${MK().slice(5)}/${MK().slice(0,4)}</span><b>${F(T)}</b></div><div class="sum"><span>Chưa thanh toán</span><b class="no">${F(U)}</b></div><div class="sum"><span>Tổng chiết khấu tháng ${MK().slice(5)}/${MK().slice(0,4)}</span><b class="no">${F(C)}</b></div></div>`}
+
+const qN=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();
+let qL={2:[],3:[]};
+function qIn(t){const q=qN($('q'+t).value).trim(),b=$('qr'+t);if(!q){b.classList.add('hide');b.innerHTML='';qL[t]=[];return}
+ const ks=t==2?[...new Set(S.rows.map(r=>r.kenh+'|'+r.kv+'|'+r.dv))]:pKeys();
+ const L=ks.filter(u=>qN(u.split('|')[2]).includes(q)).sort((a,b)=>qN(a.split('|')[2]).indexOf(q)-qN(b.split('|')[2]).indexOf(q)||a.localeCompare(b));
+ qL[t]=L;b.classList.remove('hide');
+ b.innerHTML=L.length?L.map((u,i)=>{const[k,v,d]=u.split('|');return `<div onclick="qGo(${t},${i})"><span><b>${eA(d)}</b><br><small>${eA(KN[k]||k)} · ${eA(v)}</small></span><span style="color:var(--mu);font-size:20px">›</span></div>`}).join(''):'<div class="qe">Không tìm thấy đơn vị</div>'}
+function qKey(e,t){if(e.key==='Enter'&&qL[t].length){e.preventDefault();qGo(t,0)}}
+function qGo(t,i){const u=qL[t][i];if(!u)return;const k=u.split('|')[0];
+ $('q'+t).value='';$('qr'+t).classList.add('hide');$('qr'+t).innerHTML='';$('q'+t).blur();
+ if(t==2){if(k!=K){K=k;document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x.dataset.k==k))}sum()}
+ else{cnO.add(u);cn()}
+ const el=[...document.querySelectorAll(t==2?'#sumv .dv':'#cnv .ub')].find(e=>e.dataset.u==u);
+ if(el){setTimeout(()=>{el.scrollIntoView({behavior:'smooth',block:'start'});el.classList.remove('qf');void el.offsetWidth;el.classList.add('qf')},50)}}
 function aOpen(){$('apw').value='';$('aer').textContent='';$('am').classList.remove('hide')}
 function aClose(){$('am').classList.add('hide')}
 function aYes(){if($('apw').value!=='1111'){$('aer').textContent='Sai mật khẩu';return}S.rows=[];S.units=[];S.groups=[];persist();aClose();reset();render();dvList();sum();cn()}

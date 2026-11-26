@@ -79,9 +79,9 @@ input[type="date"]::-webkit-date-and-time-value,input[type="month"]::-webkit-dat
 
 <div id="p1">
 <div class="card">
-<div style="display:flex;justify-content:space-between;align-items:baseline"><label>Kênh</label><button onclick="kmOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý</button></div><select id="kenh" onchange="plOpts()"></select>
-<div style="display:flex;justify-content:space-between;align-items:baseline"><label>Khu vực</label><button onclick="kvmOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý</button></div><select id="kv" onchange="dvList()"></select>
-<div style="display:flex;justify-content:space-between;align-items:baseline"><label>Tên đơn vị</label><button onclick="uOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý</button></div><input id="dv" list="dvl" oninput="dvIn(event)" placeholder="VD: Gara Thông Cao"><datalist id="dvl"></datalist><datalist id="mal"></datalist>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><label>Kênh</label><button onclick="kmOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý</button></div><select id="kenh" onchange="bDetach();plOpts()"></select>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><label>Khu vực</label><button onclick="kvmOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý</button></div><select id="kv" onchange="bDetach();dvList()"></select>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><label>Tên đơn vị</label><button onclick="uOpen()" style="border:0;background:none;color:var(--c2);font-size:13px;padding:4px 2px">Quản lý</button></div><input id="dv" list="dvl" oninput="bDetach();dvIn(event)" placeholder="VD: Gara Thông Cao"><datalist id="dvl"></datalist><datalist id="mal"></datalist>
 <label>Bảng giá áp dụng</label><select id="plsel" onchange="plPick()"></select>
 <div class="g2"><div><label>Ngày giao</label><input id="ngay" type="date" onchange="bSync('d')"></div>
 <div><label>Mã hàng</label><input id="ma" list="mal" placeholder="DK 55B24L" autocapitalize="characters" style="text-transform:uppercase" oninput="const a=this.selectionStart,b=this.selectionEnd;this.value=this.value.toUpperCase();this.setSelectionRange(a,b);plFill(1)" onchange="plFill(1)"></div></div>
@@ -153,7 +153,7 @@ function kmRen(i){const n=kmClean(prompt('Tên kênh',S.kenhs[i].n));if(!n)retur
 function kmDel(i){const x=S.kenhs[i];if(S.kenhs.length<2){alert('Phải giữ lại ít nhất 1 kênh');return}const c=S.rows.filter(r=>r.kenh==x.k).length,u=S.units.filter(r=>r.kenh==x.k).length,b=S.pl.filter(r=>r.kenh==x.k).length;if(c||u||b){alert('Kênh "'+x.n+'" đang có '+c+' dòng, '+u+' đơn vị, '+b+' bảng giá. Hãy xoá hoặc chuyển hết trước khi xoá kênh.');return}if(!confirm('Xoá kênh "'+x.n+'"?'))return;S.kenhs.splice(i,1);kmDone()}
 
 function tab(n){[1,2,3,4].forEach(i=>{$('p'+i).classList.toggle('hide',n!=i);$('t'+i).classList.toggle('on',n==i)});if(n==2)sum();if(n==3)cn();if(n==4)plRender()}
-let bb=null,pid=null,pids=null,PV={},NK='';
+let bb=null,bbDv='',pid=null,pids=null,PV={},NK='';
 const noteVal=()=>$('note').value.trim();
 function noteMode(){const e=$('note'),p=+$('tt').value;if(e.dataset.m)PV[e.dataset.m]=e.value;e.dataset.m=p?'1':'0';e.style.borderColor='';e.value=PV[p?'1':'0']||'';if(p){e.placeholder='Bắt buộc: VD đã tt ck, đã tt tm, đã ck cty…';e.style.color='';$('nl').style.color='';$('nl').style.fontWeight='';$('nl').innerHTML='Phương thức thanh toán <span style="color:var(--red)">*</span>'}else{e.placeholder='Ghi chú bổ sung (VD: Nợ bình cũ)';e.style.color='var(--red)';$('nl').style.color='var(--red)';$('nl').style.fontWeight='700';$('nl').textContent='Chưa tt'}}
 function needPay(){if(+$('tt').value&&!$('note').value.trim()){const e=$('note');e.style.borderColor='var(--red)';e.focus();$('gh').textContent='Bắt buộc nhập phương thức thanh toán';$('gh').className='no';return true}return false}
@@ -346,10 +346,11 @@ function bAdd(){if(needPay()){bClose();return}const{out,bad}=bParse();if(!out.le
  const u=S.units.find(x=>x.dv.toLowerCase()==dv.toLowerCase());if(u){u.kv=kv;u.kenh=kenh;nm=u.dv;plLinkSel(u)}else S.units.push({dv,kv,kenh,pls:+$('plsel').value?[+$('plsel').value]:[]});
  const t=Date.now();out.forEach((o,i)=>S.rows.push({id:t+i,kenh,kv,dv:nm,ngay:$('ngay').value,ma:o.ma,gia:o.gia,sl:o.sl,tt:+$('tt').value,ck:o.ck!=null?o.ck:+$('ck').value,note:noteVal()}));
  if(out.length>1)S.groups.push({dv:nm,ids:out.map((o,i)=>t+i)});
- persist();bb=out.map((o,i)=>t+i);$('ma').value='';$('gia').value='';$('sl').value=1;$('bdone').classList.remove('hide');$('bh').textContent='Đã thêm '+out.length+' mã'+(out.length>1?' (tự gộp đơn)':'')+'. Ghi chú, thanh toán sửa ở đây áp dụng cho cả '+out.length+' mã; đổi Mức ck sẽ ghi đè ck của cả lô.';render();dvList();bClose();calc()}
+ persist();bbDv=nm;bb=out.map((o,i)=>t+i);$('ma').value='';$('gia').value='';$('sl').value=1;$('bdone').classList.remove('hide');$('bh').textContent='Đã thêm '+out.length+' mã'+(out.length>1?' (tự gộp đơn)':'')+'. Ghi chú, thanh toán sửa ở đây áp dụng cho cả '+out.length+' mã; đổi Mức ck sẽ ghi đè ck của cả lô.';render();dvList();bClose();calc()}
 function ckSet(v){v=+v||0;const e=$('ck');if(![...e.options].some(o=>o.value!='x'&&+o.value==v)){const o=document.createElement('option');o.textContent=v;e.insertBefore(o,e.querySelector('option[value="x"]'))}e.value=[...e.options].find(o=>o.value!='x'&&+o.value==v).value;calc()}
 function ckPick(){const e=$('ck');if(e.value=='x'){const v=parseFloat(String(prompt('Nhập mức ck (%), VD: 1.5')||'').replace(',','.'));if(v>=0&&v<=100)ckSet(v);else e.value='0'}calc();bSync('c')}
-function bSync(w){if(!bb)return;if(w=='d'){if(!$('ngay').value)return;S.rows.forEach(r=>{if(bb.includes(r.id))r.ngay=$('ngay').value});persist();render();calc();return}if(needPay())return;S.rows.forEach(r=>{if(bb.includes(r.id)){r.note=noteVal();if(w=='c')r.ck=+$('ck').value;r.tt=+$('tt').value;if(!r.tt){r.pay='';r.payNote=''}}});S.groups.forEach(g=>{if(g.payNote&&g.ids.some(i=>{const r=S.rows.find(x=>x.id==i);return r&&!r.tt}))delete g.payNote});persist();render();calc()}
+function bSync(w){if(!bb)return;if($('dv').value.trim().toLowerCase()!==bbDv.toLowerCase()){bDetach();return}if(w=='d'){if(!$('ngay').value)return;S.rows.forEach(r=>{if(bb.includes(r.id))r.ngay=$('ngay').value});persist();render();calc();return}if(needPay())return;S.rows.forEach(r=>{if(bb.includes(r.id)){r.note=noteVal();if(w=='c')r.ck=+$('ck').value;r.tt=+$('tt').value;if(!r.tt){r.pay='';r.payNote=''}}});S.groups.forEach(g=>{if(g.payNote&&g.ids.some(i=>{const r=S.rows.find(x=>x.id==i);return r&&!r.tt}))delete g.payNote});persist();render();calc()}
+function bDetach(){bb=null;bbDv='';$('bdone').classList.add('hide');$('bh').textContent=''}
 function reset(){edit=null;$('ngay').value='';bb=null;$('bdone').classList.add('hide');$('bh').textContent='';['dv','ma','gia'].forEach(i=>$(i).value='');PV={};$('note').dataset.m='';$('note').value='';$('sl').value=1;$('ck').value=0;$('tt').value=0;noteMode();$('save').textContent='Thêm';$('cancel').classList.add('hide');$('plsel').value='';plOpts();$('ph').textContent='';calc()}
 function save(){
  const r={id:edit||Date.now(),kenh:$('kenh').value,kv:$('kv').value,dv:$('dv').value.trim(),ngay:$('ngay').value,ma:$('ma').value.trim().toUpperCase(),gia:P($('gia').value),sl:+$('sl').value||1,tt:+$('tt').value,ck:+$('ck').value,note:noteVal()};
@@ -358,7 +359,7 @@ function save(){
  const u=S.units.find(x=>x.dv.toLowerCase()==r.dv.toLowerCase());if(u){u.kv=r.kv;u.kenh=r.kenh;r.dv=u.dv;plLinkSel(u)}else S.units.push({dv:r.dv,kv:r.kv,kenh:r.kenh,pls:+$('plsel').value?[+$('plsel').value]:[]});
  if(edit){S.rows=S.rows.map(x=>x.id==edit?r:x)}else S.rows.push(r);
  persist();reset();render();dvList()}
-function ed(id){const r=S.rows.find(x=>x.id==id);edit=id;
+function ed(id){bDetach();const r=S.rows.find(x=>x.id==id);edit=id;
  $('kenh').value=r.kenh;$('kv').value=r.kv;$('dv').value=r.dv;$('ngay').value=r.ngay;$('ma').value=r.ma;$('gia').value=r.gia;$('sl').value=r.sl;$('tt').value=r.tt;PV={};PV[r.tt?'1':'0']=r.note||'';$('note').dataset.m='';noteMode();ckSet(r.ck);
  $('save').textContent='Lưu';$('cancel').classList.remove('hide');calc();scrollTo(0,0)}
 let dq=null;function del(id){const r=S.rows.find(x=>x.id==id);if(!r)return;dq=id;$('dmi').textContent=`${r.dv} · ${D(r.ngay)} · ${r.ma} · ${F(r.gia)} × ${r.sl} = ${F(tien(r))}`;$('dm').classList.remove('hide')}
